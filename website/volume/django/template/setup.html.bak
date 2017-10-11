@@ -1,0 +1,111 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>克顿影视数据分析系统</title>
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.0.js"></script>
+<script>
+var cur;
+$(function() {
+    $('form').on('submit', function() {
+        $('input').hide();
+    });
+    cur = $('.table').html();
+    doPoll();
+});
+function doPoll(){
+    $.get('/setup/', function(data) {
+        //$('html').html(data);
+        var html = $($.parseHTML(data)[19]).html();
+        if (cur !== html) {
+            $('.table').html($.parseHTML(data)[19]);
+            cur = html;
+        }
+        setTimeout(doPoll, 5000);
+    });
+}
+</script>
+</head>
+<body>
+<h1>克顿影视数据分析系统</h1>
+
+<a href="http://118.192.8.106:8000/croton/">观看分析纪录</a>
+
+<hr />
+
+<h2>1. 上传档案</h2>
+
+<form action="/data/" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    *Template Name: <input id="name" name="name" required /><br />
+    *rawdata: <input id="uploadbutton" type="file" value="rawdata" name="rawdata" accept="text/csv" required /><br />
+    role: <input id="uploadbutton" type="file" value="role" name="role" accept="text/csv" /><br />
+    pov: <input id="uploadbutton" type="file" value="pov" name="pov" accept="text/csv" /><br />
+    <input type="submit" value="上传档案" />
+</form>
+
+<h2>2. 资料转换</h2>
+
+<div class="table">
+<table border="1", sytle="width:100%">
+  <tr>
+    <th>Create Date</th>
+    <th>Name</th>
+    <th>Row Count</th>
+    <th>Action</th>
+    <th>Delete</th>
+  </tr>
+  {% for item in templates %}
+  <tr>
+    <td>{{ item.time }}</td>
+    <td>{{ item.name }}</td>
+    <td>{{ item.row  }}</td>
+    <td>
+        {% if item.action == "init_cluster" %}
+        <form action="/setup/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="idx" value="{{item.index}}">
+            <input type="hidden" name="type" value="start_cluster">
+            <input type="hidden" name="name" value="{{item.name}}">
+            基本分群参数: <input name="cthr" type="number" min="0" max="1" step="0.0001" style="width: 150px;" required placeholder="参数值是 0-1 之间">
+            群組參數: <input name="gthr" type="number" min="0" max="1" step="0.0001" style="width: 150px;" required placeholder="参数值是 0-1 之间">
+            <input type="submit" value="启动分群"></input>
+        </form>
+        {% elif item.action == "wait_cluster" %}
+        wait cluster initiation
+        {% elif item.action == "wait_build" %}
+        wait building cluster
+        {% elif item.action == "build_cluster" %}
+        <form action="/setup/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="idx" value="{{item.index}}">
+            <input type="hidden" name="type" value="build_cluster">
+            <input type="submit" value="建立基本分群"></input>
+        </form>
+        {% elif item.action == "analyze" %}
+        <form action="/setup/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="idx" value="{{item.index}}">
+            <input type="hidden" name="type" value="analyze">
+            <input type="hidden" name="name" value="{{item.name}}">
+            记录名称<input name="record"></input>
+            <input type="submit" value="建立分析纪录"></input>
+            <a href="http://lingtelli.com:8101/croton/#template={{item.index}}">[前往操作页面]</a>
+        </form>
+
+        {% endif %}
+    </td>
+    <td>
+        <form action="/setup/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="idx" value="{{item.index}}">
+            <input type="hidden" name="type" value="delete">
+            <input type="submit" value="刪除"></input>
+        </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+</body>
+</html>
+

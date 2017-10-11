@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+  
+
+  <link rel="stylesheet" href="style.css">
+
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+</head>
+
+<body>
+	<div class="nav">
+		<div class="list">
+			<div class="entry active">create</div>
+			<div class="entry">manage</div>
+		
+		</div>
+	</div>
+	<div class="main">
+		<div class="page active">
+
+			
+			<!-- 新建樣板畫面 -->
+			<div class="container create">
+
+				<div class="title">新建樣板</div>
+				<input  class="name" type="text">
+				<div class="apply">新建</div>
+			</div>
+
+
+			<!-- 樣板管理畫面( 分析中 ) -->
+			<div class="container edit">
+				<div class="title">管理樣板</div>
+				<select class="template">
+					<option>template A</option>
+					<option>template B</option>
+					<option>template C</option>
+
+				</select>
+				<div class="status row">狀態 : 分析中</div>
+				<div class="ctrl row">
+					<div class="cancel btn">取消</div>
+
+				</div>
+				
+			</div>
+
+			<!-- 樣板管理畫面正常可運行 -->
+			<div class="container edit">
+				<div class="title">管理樣板</div>
+				<select class="template row">
+					<option>template A</option>
+					<option>template B</option>
+					<option>template C</option>
+
+				</select>
+				<div class="status row">狀態 : 暫停 || 正常</div>
+
+				<div class="t-name row gray">
+					<div class="title">樣板名稱</div>
+					<input class="name" type="text">
+					<div class="btn">修改</div>
+
+				</div>
+
+				<div class="record row gray">
+					<div class="title">紀錄名稱</div>
+
+					<div class="list">
+						<div class="entry">
+							<input type="text" value="record name" class="name">
+							<div class="edit btn">edit</div>
+							<div class="remove btn">remove</div>
+
+						</div>
+
+						<div class="entry">
+							<input type="text" value="record name" class="name">
+							<div class="edit btn">edit</div>
+							<div class="remove btn">remove</div>
+
+						</div>
+
+						<div class="entry">
+							<input type="text" value="record name" class="name">
+							<div class="edit btn">edit</div>
+							<div class="remove btn">remove</div>
+
+						</div>
+					</div>
+
+					<div class="create">
+						
+						<input class="name" type="text">
+						<div class="btn apply">新增</div>
+					</div>
+					
+				</div>
+
+				<div class="ctrl row">
+					<div class="stop btn">暫停</div>
+					<div class="remove btn">刪除</div>
+
+				</div>
+				
+			</div>
+
+		</div>
+
+		
+
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "croton-api",
+  "version": "1.0.0",
+  "description": "api for croton web page",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "author": "jhow",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.4",
+    "mysql2": "^1.4.2",
+    "sequelize": "^4.8.3"
+  }
+}

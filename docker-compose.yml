@@ -1,0 +1,155 @@
+version: '2'
+
+services:
+    logging:
+        build: ./logging/master
+        container_name: logging
+        ports:
+            - 5514:514/udp
+        volumes:
+            - ./logging/master/log/log:/var/log/messages
+
+    mysql:
+        build: ./mysql
+        container_name: mysql
+        volumes:
+            - ./mysql/log:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: "croton"
+            MYSQL_ROOT_PASSWORD: lingtelli
+            MYSQL_ROOT_HOST: 0.0.0.0
+            MYSQL_USER: lingtelli
+            MYSQL_PASSWORD: lingtelli
+        ports:
+            - 3306:3306
+        restart: always
+        networks:
+            - website_mysql_net
+            - backend_mysql_net
+            - watcher_mysql_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: mysql
+    
+    mongo:
+        image: mongo:latest
+        container_name: mongo
+        ports:
+            - 27071:27017
+        volumes:
+            - ./logging/mongo/log:/data/db
+        restart: always
+        networks:
+            - log_mongo_net
+    
+    website:
+        depends_on:
+            - mysql
+        build: ./website
+        container_name: website
+        command: python3 manage.py runserver 0.0.0.0:8000 
+        volumes:
+            - ./website/volume/django:/code
+        ports:
+            - 8000:8000
+        links:
+            - mysql:mysql
+        restart: always
+        networks:
+            - website_mysql_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: web
+
+    backend:
+        depends_on:
+            - mysql
+        build: ./backend
+        container_name: backend
+        environment:
+            - DATABASE_HOST=mysql
+        command: npm start
+        volumes:
+            - ./backend/volume/croton-api:/code
+        ports:
+            - 3333:3333
+        links:
+            - mysql:mysql
+        restart: always
+        networks:
+            - backend_mysql_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: backend
+
+    clustering-log:
+        depends_on:
+            - mongo
+        build: ./logging/clustering
+        container_name: clustering-logging
+        command: python3 start.py
+        volumes:
+            - ./logging/clustering/volume:/code
+        ports: 
+            - 3000:3000
+        links:
+            - mongo:mongo
+        restart: always
+        networks:
+            - log_mongo_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: logServer
+
+    redis:
+        build: ./watcher/redis
+        container_name: redis
+        command: redis-server
+        volumes:
+            - ./watcher/redis/data:/data
+        ports:
+            - 6379:6379
+        networks:
+            - watcher_redis_net
+
+    watcher:
+        build: ./watcher/controller
+        container_name: watcher
+        command: python3 start.py
+        volumes:
+            - ./watcher/controller/volume:/code
+        ports:
+            - 8011:8011
+        networks:
+            - watcher_redis_net
+            - watcher_mysql_net
+
+
+
+volumes:
+    mysql_data:
+
+networks:
+    website_mysql_net:
+        driver: bridge
+    backend_mysql_net:
+        driver: bridge
+    log_mongo_net:
+        driver: bridge
+    watcher_redis_net:
+        driver: bridge
+    watcher_mysql_net:
+        driver: bridge
+

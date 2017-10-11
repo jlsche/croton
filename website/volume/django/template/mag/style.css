@@ -1,0 +1,350 @@
+input{
+	box-sizing: border-box;
+}
+div,input{
+	font-family:sans-serif, 微軟正黑體;
+}
+
+body {
+	margin:0;
+	padding: 0;
+	width: 100%;
+	height: auto;
+	background-color: rgba(50,80,190,0.25);
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: inline-block;
+}
+
+body > .nav{
+	width:300px;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	background-color: rgba(150,150,250,0.25);
+	box-sizing: content-box;
+	transition-timing-function: ease-out;
+	transition-duration: 0.4s;
+	padding-left:0;
+	z-index: 20;
+	display: inline-block;
+}
+
+body > .nav:hover{
+	width: 400px;
+	background-color: rgba(150,150,250,1);
+}
+
+body > .nav > .list {
+	top: 100px;
+	width: 100%;
+	margin: 0;
+	position: relative;
+	height: calc(100% -100px);
+	display: inline-block;
+}
+
+body > .nav > .list > .entry{
+	width: 100%;
+	padding:20px 0px;
+	padding-left: 20px;
+	text-align: left;
+	line-height: 45px;
+	transition-duration: 1.3s;
+	color: #656565;
+	font-size: 30px;
+	cursor: pointer;
+	display: inline-block;
+}
+
+body > .nav > .list > .entry:hover{
+	background-color: rgba(255,255,255,0.5);
+	padding-left: 65px;
+	color: #333;
+}
+
+body > .nav > .list > .entry.active{
+	background-color: rgba(255,255,255,0.5);
+	padding-left: 65px;
+	color: #333;
+}
+
+body > .main {
+	width: calc(100% - 300px);
+	height: 100%;
+	top: 0;
+	left: 0;
+	margin: 0;
+	padding-left: 300px;
+	position: relative;
+	overflow: hidden;
+	background-color: rgba(250,250,250,0.25);
+	z-index: 10;
+	display: inline-block;
+}
+body > .main > .page{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	display: none;
+}
+
+body > .main > .page.active{
+	display: inline-block;
+}
+
+body > .main > .page > .container {
+	margin: 0 10%;
+    margin-top: 100px;
+    padding: 20px;
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 80%;
+    height: auto;
+    background-color: white;
+    border-radius: 5px;
+    border-width: 1px;
+    border-color: #aaa;
+    border-style: solid;
+
+}
+
+body > .main > .page > .container > .title {
+	font-size: 30px;
+	line-height: 40px;
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	margin-bottom: 15px;
+}
+
+body > .main > .page > .container.create > .name{
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	
+	font-size: 20px;
+	line-height: 25px;
+}
+
+
+body > .main > .page > .container.create > .apply{
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	text-align: center;
+	margin-top: 15px;
+	font-size: 20px;
+	line-height: 25px;
+	background-color: #999;
+	border-width: 1px;
+    border-color: transparent;
+    border-style: solid;
+    cursor: pointer;
+}
+
+body > .main > .page > .container.create > .apply:hover{
+	content: #000;
+	background-color: white;
+    border-color: #aaa;
+    transition-duration: 0.5s;
+
+}
+
+body > .main > .page > .container.edit > .status{
+	font-size: 25px;
+	line-height: 30px;
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	color: #999;
+}
+
+body > .main > .page > .container.edit > .template{
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	font-size: 20px;
+	line-height: 25px;
+}
+body > .main > .page > .container.edit > .ctrl{
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	text-align: right;
+}
+
+
+body > .main > .page > .container.edit > .ctrl > .btn{
+	font-size: 20px;
+	line-height: 35px;
+	position: relative;
+	display: inline-block;
+	padding-left: 35px;
+	padding-right: 35px;
+	background-color: #ccc;
+	color: #777;
+	margin-top: 30px;
+	transition-duration: 0.5s;
+	cursor: pointer;
+}
+body > .main > .page > .container.edit > .ctrl > .remove:hover,
+body > .main > .page > .container.edit > .ctrl > .cancel:hover{
+	background-color: rgba(255,120,120,0.7);
+	color:#000;
+}
+
+body > .main > .page > .container.edit > .ctrl > .stop:hover{
+	background-color: rgba(120,120,255,0.7);
+	color:#000;
+}
+
+body > .main > .page > .container.edit > .row { 
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	margin-bottom: 10px;
+
+}
+body > .main > .page > .container.edit > .row.gray{
+	background-color: #eee;
+}
+
+body > .main > .page > .container.edit > .t-name,
+body > .main > .page > .container.edit > .record{
+	padding: 5px;
+    box-sizing: border-box;
+}
+body > .main > .page > .container.edit > .t-name > *{
+	width: 100%;
+	text-align: left;
+	position: relative;
+	display: inline-block;
+	padding-right: 30px;
+	box-sizing: border-box;
+	margin-bottom: 5px;
+}
+
+
+body > .main > .page > .container.edit > .t-name > .name{
+	font-size: 20px;
+	line-height: 25px;
+
+}
+body > .main > .page > .container.edit > .record > .create > .apply,
+body > .main > .page > .container.edit > .record > .list > .entry > .btn,
+body > .main > .page > .container.edit > .t-name > .btn{
+	transition-duration: 0.5s;
+	background-color: #999;
+	border-width: 1px;
+    border-color: transparent;
+    border-style: solid;
+    cursor: pointer;
+    font-size: 20px;
+	line-height: 25px;
+	position: relative;
+	display: inline-block;
+	text-align: center;
+	box-sizing: border-box;
+}
+
+body > .main > .page > .container.edit > .record > .create > .apply:hover,
+body > .main > .page > .container.edit > .record > .list > .entry > .btn:hover,
+body > .main > .page > .container.edit > .t-name > .btn:hover{
+	color: #000;
+	background-color: white;
+    border-color: #aaa;
+}
+
+body > .main > .page > .container.edit > .record{
+	width: 100%;
+	position: relative;
+	display: inline-block;
+}
+
+
+body > .main > .page > .container.edit > .record > .list{
+	width: 100%;
+	position: relative;
+	display: inline-block;
+}
+
+body > .main > .page > .container.edit > .record > .list > .entry{
+	width: 100%;
+	position: relative;
+	display: inline-block;
+	margin-bottom: 10px;
+	font-size: 0;
+}
+
+
+
+body > .main > .page > .container.edit > .record > .list > .entry > .name{
+	position: relative;
+	display: inline-block;
+	width: 55%;
+	margin-right: 3%;
+	font-size: 20px;
+	line-height: 25px;
+	box-sizing: border-box;
+}
+
+body > .main > .page > .container.edit > .record > .list > .entry > .edit{
+	position: relative;
+	display: inline-block;
+	width: 20%;
+	font-size: 20px;
+	line-height: 25px;
+	margin-right: 1%;
+}
+
+body > .main > .page > .container.edit > .record > .list > .entry > .remove{
+	position: relative;
+	display: inline-block;
+	width: 20%;
+	font-size: 20px;
+	line-height: 25px;
+	margin-right: 1%;
+}
+
+body > .main > .page > .container.edit > .record > .list > .entry > .btn{
+	color: #777;
+	background-color: #ddd;
+}
+
+body > .main > .page > .container.edit > .record > .create{
+	position: relative;
+	display: inline-block;
+	width: 100%;
+	font-size: 0;
+}
+
+body > .main > .page > .container.edit > .record > .create > input,
+body > .main > .page > .container.edit > .record > .create > .apply{
+	display: inline-block;
+	position: relative;
+}
+
+body > .main > .page > .container.edit > .record > .create > input{
+	width: 78%;
+	margin-right: 1%;
+	font-size: 20px;
+	line-height: 25px;
+}
+
+body > .main > .page > .container.edit > .record > .create > .apply{
+	width: 20%;
+	font-size: 20px;
+	line-height: 25px;
+	text-align: center;
+	color: #777;
+	background-color: #ddd;
+}

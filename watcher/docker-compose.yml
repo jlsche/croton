@@ -1,0 +1,30 @@
+version: '2'
+
+services:
+    redis:
+        build: ./redis
+        container_name: redis-server
+        command: redis-server
+        volumes:
+            - ./redis/data:/data
+        ports:
+            - 6379:6379
+        networks:
+            - server_watcher_net
+    
+    controller:
+        build: ./controller
+        container_name: watcher
+        command: python3 start.py
+        volumes:
+            - ./controller/volume:/code
+        ports:
+            - 8011:8011
+        networks:
+            - server_watcher_net
+
+
+networks:
+    server_watcher_net:
+        driver: bridge
+

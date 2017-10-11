@@ -1,0 +1,3 @@
+FROM voxxit/rsyslog:latest
+
+

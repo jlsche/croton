@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+    mysql:
+        build: ./
+        container_name: t789
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_DATABASE: croton
+            MYSQL_ROOT_PASSWORD: "lingtelli"
+            MYSQL_ROOT_HOST: 0.0.0.0
+            MYSQL_USER: lingtelli
+            MYSQL_PASSWORD: lingtelli
+        volumes:
+            - ./log:/var/lib/mysql

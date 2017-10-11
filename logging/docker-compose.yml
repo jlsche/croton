@@ -1,0 +1,49 @@
+version: '2'
+
+services:
+    logging:
+        build: ./master
+        container_name: master-logging
+        ports:
+            - 5514:514/udp
+        volumes:
+            - ./master/log/log:/var/log/messages
+
+    mongo:
+        image: mongo:latest
+        container_name: mongo
+        ports:
+            - 27071:27017
+        volumes:
+            - ./mongo/log:/data/db
+        restart: always
+        networks:
+            - log_mongo_net
+    
+    clustering-log:
+        depends_on:
+            - mongo
+        build: ./clustering
+        container_name: clustering-logging
+        command: python3 start.py
+        volumes:
+            - ./clustering/volume:/code
+        ports: 
+            - 3000:3000
+        links:
+            - mongo:mongo
+        restart: always
+        networks:
+            - log_mongo_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: ClusteringLogServer
+
+
+networks:
+    log_mongo_net:
+        driver: bridge
+

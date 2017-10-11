@@ -1,0 +1,10 @@
+    <h1>克頓影視數據分析系統</h1>
+
+    <form action="/data/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        Template Name: <input id="name" name="name"><br />
+        rawdata: <input id="uploadbutton" type="file" value="rawdata" name="rawdata" accept="text/csv" /><br />
+        role: <input id="uploadbutton" type="file" value="role" name="role" accept="text/csv" /><br />
+        pov: <input id="uploadbutton" type="file" value="pov" name="pov" accept="text/csv" /><br />
+        <input type="submit" value="Upload" />
+    </form>

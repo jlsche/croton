@@ -1,0 +1,577 @@
+{% load staticfiles %}
+<html>
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="../static/plugin/joint/joint.css">
+	<link rel="stylesheet" type="text/css" href="../static/plugin/font-awesome/css/font-awesome.min.css">
+	
+	<link rel="stylesheet" type="text/css" href="../static/css/main.css">
+
+	<!-- pagination -->
+	<link rel="stylesheet" type="text/css" href="../static/css/pagination.css">
+
+	<script src="../static/plugin/jquery.js" charset="UTF-8"></script>
+	<script src="../static/plugin/jquery.inputevent.js" charset="UTF-8"></script>
+
+	<script src="../static/plugin/vanilla.js" charset="UTF-8"></script>
+	<script src="../static/plugin/jquery-ui.min.js" charset="UTF-8"></script>
+	<script src="../static/plugin/FileSaver.js" charset="UTF-8"></script>
+	
+	<!-- system object class -->
+	<script src="../static/js/evtManage.js" charset="UTF-8"></script>
+	<script src="../static/js/system/group.js" charset="UTF-8"></script>
+	<script src="../static/js/system/ctrl.js" charset="UTF-8"></script>
+	<script src="../static/js/system/class.js" charset="UTF-8"></script>
+
+	<script src="../static/js/lan.js" charset="UTF-8"></script>
+	<script src="../static/js/system/dataStorage.js" charset="UTF-8"></script>
+
+	<script src="../static/js/system/filter.js" charset="UTF-8"></script>
+	<script src="../static/js/system/output.js" charset="UTF-8"></script>
+	
+	<script src="../static/js/request-controller.js" charset="UTF-8"></script>
+	<script src="../static/js/nav-controller.js" charset="UTF-8"></script>
+	
+
+	
+	<script src="../static/js/main.js" charset="UTF-8"></script>
+
+	<script type="text/javascript">
+		var csrf = '{{ csrf_token }}';
+	</script>
+</head>
+
+<body onload="page_init()">
+	<div class="overlay loading-status">
+            <div id="loadingText" style=" text-align:center;position:absolute; top:52%;left:43%; width:14%; font-size:14pt;color:#9a9a9a;"></div>
+	</div>
+	<div class="nav">
+		<div class="container">
+			<div class="item template select" label ="template">
+				<div class="entry"></div>
+			</div>
+
+
+			<div class="item record select" label ="record">
+				<div class="entry"></div>
+			</div>
+
+			<div class="item load btn-entry" label ="load" data-lanCont="load">
+
+			</div>
+
+			<!--
+			<div class="item save btn-entry" label ="save" data-lanCont="save">
+
+			</div>
+			-->
+
+			<div class="item user" label ="user">
+
+			</div>
+
+			<div class="log">
+
+			</div>
+		</div>
+		
+	</div>
+
+
+	<div class="main">
+		<div class="container book">
+			<div class="top">
+				<div class="ctrl panel">
+					<div class="css-before"></div>
+					<div class="input">
+						<input class="text" type="text">
+						<div class="search btn-entry btn-blue" data-lanCont="search" id="search"></div>
+						<!--
+						<div class="clear btn-entry btn-red" data-lanCont="view-all"></div>
+						-->
+					</div>
+
+					<div class="output">
+						
+						<div class="data btn-entry btn-green "data-lanCont="output-text" id="output"></div>
+						<div class="rawdata btn-entry btn-green "data-lanCont="output-rawdata" id="output-raw"></div>
+						<div class="sentenceOutput btn-entry btn-green "data-lanCont="output-sentence" id="output-typical"></div>
+
+					</div>
+
+					
+
+				</div>
+			</div>
+
+
+			<div class="main">
+				
+				<div class="css-before"></div>
+				<div class="left group panel">
+					<div class="item rect">
+						<div class="entry">
+							<div class="id sel">
+								<div class="checkbox">
+									<div class="box"></div>
+								</div>
+
+								<div class="text" data-lanCont="set"></div>
+							</div>
+
+							<div class="string" data-lanCont="typical-sentence"></div>
+
+							<div class="num" data-lanCont="sentence-num"></div>
+
+							<div class="label">
+								<div class="text" data-lanCont="label"></div>
+								<div class="mark">
+									<div class="sel entry active" id="filter">▼</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="list rect">
+						
+
+					</div>
+
+
+					<div class="hidden">
+						
+						<div class="entry">
+							<div class="id sel">
+								<div class="checkbox">
+									<div class="box"></div>
+								</div>
+
+								<div class="text"></div>
+							</div>
+
+							<div class="string"></div>
+
+							<div class="num"></div>
+
+							<div class="label">
+								<input type="text" class="text">
+								<div class="mark">
+									<div class="add entry">＋</div>
+									<div class="sel entry active">▼</div>
+
+								</div>
+
+							</div>
+
+
+
+						</div>
+					</div>
+				</div>
+
+				<div class="right class panel">
+					<div class="item rect">
+						<div class="entry">
+
+							<div class="apply-tag"></div>
+							<div class="id" data-lanCont="id"></div>
+
+							<div class="string"  data-lanCont="label"></div>
+							<div class="set"  data-lanCont="set-num"></div>
+
+							<div class="num"  data-lanCont="sentence-num"></div>
+
+							<div class="sel">
+								<div class="checkbox">
+									<div class="box"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="list rect">
+						
+
+					</div>
+					<div class="hidden">
+						<div class="entry">
+							<div class="apply-tag btn-red"  data-lanCont="select"></div>
+							<div class="id"></div>
+							<div class="string"></div>
+							<div class="set"></div>
+							<div class="num"></div>
+							<div class="sel">
+								<div class="checkbox">
+									<div class="box"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ctrl">
+					<div class="btn-entry entry create btn-blue" data-lanCont="create"></div>
+					<div class="btn-entry entry combine btn-blue" data-lanCont="combine"></div>
+					<div class="btn-entry entry split btn-blue" data-lanCont="split"></div>
+					<div class="btn-entry entry remove btn-blue" data-lanCont="remove"></div>
+					<div class="btn-entry entry edit btn-blue" data-lanCont="edit-name"></div>
+
+				</div>
+
+				
+
+			</div>
+
+			<div class="pagination hidden">
+				<ul id="pagination-demo" class="pagination-sm"></ul>
+				<div id="page-content" class="page-content">Page 1</div>
+			</div>
+
+		</div>
+		
+	</div>
+
+	<div class="overlay-view template">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text">
+					title
+				</div>
+
+			</div>
+
+
+			<div class="cont">
+
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<datalist id="classList">
+	  <option value="empty">	
+	</datalist>
+
+	<!-- 評論 -->
+	<div class="overlay-view group ">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text" data-lanCont="sentence">
+					
+				</div>
+			</div>
+			<div class="cont">
+				<div class="tip"><span data-lanCont="typical-sentence"></span> : <span class="default bold"></span>，<span data-lanCont="term01"></span><span class="num bold">0</span><span data-lanCont="term02"></span></div>
+
+				<div class="list">
+					<div class="entry"></div>
+				</div>
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="close"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry"></div>
+			</div>
+		</div>
+	</div>
+	<!-- 移除標籤 -->
+	<div class="overlay-view remove ">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text" data-lanCont="remove-label">
+					
+				</div>
+			</div>
+			<div class="cont">
+				<div class="tip" data-lanCont="term09"></div>
+
+				<div class="list">
+				
+				</div>
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry"></div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<!-- 群組標籤 -->
+	<div class="overlay-view classed">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text"  data-lanCont="label-group">
+					
+				</div>
+			</div>
+			<div class="cont">
+				<div class="tip" data-lanCont="term03"></div>
+
+				<div class="name"></div>
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 標籤新增 -->
+	<div class="overlay-view create">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text"  data-lanCont="create-label">
+					
+				</div>
+			</div>
+			<div class="cont">
+				<div class="tip" data-lanCont="term04"></div>
+				<div class="tip_sys"></div>
+
+				<input type="text" maxlength="10" class="text" >
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 標籤更名 -->
+	<div class="overlay-view edit">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text"  data-lanCont="rename-label">
+					
+				</div>
+			</div>
+			<div class="cont">
+
+				<div class="tip">
+				<span  data-lanCont="label"></span>
+				<span class="rename"></span>
+				<span  data-lanCont="term05"></span>
+				</div>
+
+				<input type="text" maxlength="10" class="text" >
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 錯誤 -->
+	<div class="overlay-view error " data-lanCont="error">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text">
+					
+				</div>
+			</div>
+			<div class="cont">
+				
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="close"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry"></div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 標籤合併 -->
+	<div class="overlay-view combine ">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text"  data-lanCont="combine-label">
+					
+				</div>
+			</div>
+			<div class="cont">
+				<div class="tip" data-lanCont="term06"></div>
+				<div class="list">
+					
+				</div>
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry"></div>
+			</div>
+
+		</div>
+
+	</div>
+
+
+
+	<!-- 標籤拆分 -->
+	<div class="overlay-view split ">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text" data-lanCont="splite-label">
+					
+				</div>
+			</div>
+			<div class="cont">
+				<div class="text">
+					<div> <span  data-lanCont="term07"></span>
+					<span class="label"></span></div>
+
+					<div class="tip"  data-lanCont="term08"></div>
+				</div>
+				<div class="item rect">
+					<div class="entry">
+						<div class="ctrl"></div>
+						<div class="text"  data-lanCont="label"></div>
+					</div>
+				</div>
+
+				<div class="opt rect">
+					<div class="entry">
+						<div class="ctrl">
+							<div class="checkbox ">
+								<div class="box"></div>
+							</div>						
+						</div>
+						<div class="text" data-lanCont="select-all"></div>
+					</div>
+				</div>
+
+				<div class="list rect">	
+
+
+				</div>
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry">
+					<div class="ctrl">
+						<div class="checkbox">
+							<div class="box"></div>
+						</div>						
+					</div>
+					<div class="text"></div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<!-- 標籤篩選 -->
+	<div class="overlay-view label ">
+		<div class="css-before"></div>
+		<div class="cont">
+			<div class="title">
+				<div class="text" data-lanCont="filter-label">
+					
+				</div>
+			</div>
+			<div class="cont">
+				<div class="item rect">
+					<div class="entry">
+						<div class="ctrl"></div>
+						<div class="text" data-lanCont="label"></div>
+					</div>
+				</div>
+
+				<div class="opt rect">
+					<div class="entry">
+						<div class="ctrl">
+							<div class="checkbox ">
+								<div class="box"></div>
+							</div>						
+						</div>
+						<div class="text" data-lanCont="select-all"></div>
+					</div>
+				</div>
+
+				<div class="list rect">					
+				</div>
+			</div>
+
+			<div class="ctrl">
+				<div class="btn-object btn-blue apply" data-lanCont="apply"></div>
+				<div class="btn-object btn-red cancel" data-lanCont="cancel"></div>
+			</div>
+
+			<div class="hidden">
+				<div class="entry">
+					<div class="ctrl">
+						<div class="checkbox">
+							<div class="box"></div>
+						</div>						
+					</div>
+					<div class="text"></div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<!-- pagination cdn -->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twbs-pagination/1.4.1/jquery.twbsPagination.min.js"></script>
+
+
+</body>
+</html>

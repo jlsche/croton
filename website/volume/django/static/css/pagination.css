@@ -1,0 +1,27 @@
+body > .main > .book > .pagination {
+	width: 101%;
+  font-size: 14;
+	background-color: #eee;
+  text-align: center;
+	/*margin: 60px auto;
+  text-align: center;*/
+
+}
+
+body > .main > .book > .pagination > #pagination-demo {
+  display: inline-block;
+  margin: 5px;
+}
+
+body > .main > .book > .pagination > #pagination-demo li{
+  display: inline-block;
+  padding: 1px;
+  margin: 3px;
+}
+
+body > .main > .book > .pagination > .page-content{
+  text-align: center;
+  display: block;
+  padding: 1px;
+  width: 100%;
+}
