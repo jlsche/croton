@@ -45,9 +45,9 @@ def check_serving_status(task_id):
     processing_row_count = row[0]
     processing_vm_count = row[1]
 
-    if (processing_row_count + task_row_count > 600):
+    if (processing_row_count + task_row_count > 6000001):
         return 'Maximum row count exceeded. Currently {}.'.format(processing_row_count)
-    if (processing_vm_count >= 7):
+    if (processing_vm_count >= 8):
         return 'Maximum instance count exceeded. Currently {}.'.format(processing_vm_count)
     else:
         return 'available'
