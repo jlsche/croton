@@ -28,6 +28,7 @@ services:
             - website_mysql_net
             - backend_mysql_net
             - watcher_mysql_net
+            - belayer_mysql_net
         logging:
             driver: "syslog"
             options:
@@ -45,6 +46,7 @@ services:
         restart: always
         networks:
             - log_mongo_net
+            - belayer_mongo_net
     
     website:
         depends_on:
@@ -138,6 +140,30 @@ services:
         networks:
             - watcher_redis_net
             - watcher_mysql_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: watcher
+
+
+    belayer:
+        build: ./watcher/belayer
+        container_name: belayer
+        command: python3 start.py
+        volumes:
+            - ./watcher/belayer/volume:/code
+        restart: always
+        networks:
+            - belayer_mongo_net
+            - belayer_mysql_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: belayer
 
 
 
@@ -154,5 +180,9 @@ networks:
     watcher_redis_net:
         driver: bridge
     watcher_mysql_net:
+        driver: bridge
+    belayer_mongo_net:
+        driver: bridge
+    belayer_mysql_net:
         driver: bridge
 

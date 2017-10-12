@@ -6,15 +6,13 @@ import requests
 from pymongo import MongoClient
 
 
-quit_url = 'http://192.168.10.16:8011/quit/'
-#mongo_client = MongoClient('mongo')
-mongo_client = MongoClient('192.168.10.16', port=27071)
+quit_url = 'http://192.168.10.16:8011/quit'
+mongo_client = MongoClient('mongo')
 db = mongo_client['log']
 
 
 def connect_mysql():
-    #db =  pymysql.connect(host='mysql', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
-    db =  pymysql.connect(host='192.168.10.16', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
+    db =  pymysql.connect(host='mysql', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
     db_cursor = db.cursor()
     db_cursor.execute('SET NAMES utf8;')
     db_cursor.execute('SET CHARACTER SET utf8;')
@@ -24,8 +22,7 @@ def connect_mysql():
 def get_working_tasks():
     conn = connect_mysql()
     cur = conn.cursor()
-    #query_string = 'SELECT id, status FROM CrotonTemplate where status in ("building", "stage1", "stage2")'
-    query_string = 'SELECT id, status FROM CrotonTemplate where status in ("building", "stage1", "init_cluster");'
+    query_string = 'SELECT id, status FROM CrotonTemplate where status in ("stage1")'
     cur.execute(query_string)
     tasks = list(cur)
     cur.close()
@@ -52,8 +49,8 @@ def monitor_clustering():
             if count > task_status[task_id]:
                 task_status[task_id] = count
             else:
-                #res = requests.put(quit_url + task)
-                print('task {} should be terminated'.format(task_id))
+                res = requests.put('{}/{}'.format(quit_url, task_id))
+                print('task {} should be terminated.'.format(task_id))
 
         diff = list(set(task_status.keys()) - set(_tasks))
         for _id in diff:
@@ -61,7 +58,7 @@ def monitor_clustering():
             print('task {} finished clustering'.format(_id))
 
 
-        time.sleep(5)
+        time.sleep(600)
 
 
 

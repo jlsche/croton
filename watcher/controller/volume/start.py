@@ -44,13 +44,15 @@ def check_serving_status(task_id):
     processing_row_count = row[0]
     processing_vm_count = row[1]
 
+    if processing_row_count is None:
+        processing_row_count = 0
+
     if (processing_row_count + task_row_count > 6000001):
         return 'Maximum row count exceeded. Currently {}.'.format(processing_row_count)
     if (processing_vm_count >= 8):
         return 'Maximum instance count exceeded. Currently {}.'.format(processing_vm_count)
     else:
         return 'available'
-
 
 
 
@@ -86,7 +88,7 @@ def add_task(task_id):
     conn.cursor().execute(update_string)
     conn.commit()
 
-    start_instance()
+    #start_instance()
 
     return jsonify({
         'status': 'OK',
@@ -193,7 +195,7 @@ def force_quit(task_id):
     conn.cursor().execute(update_string)
     conn.commit()
 
-    stop_instance(instance_id)
+    #stop_instance(instance_id)
 
     return jsonify({
         'status': 'OK',
