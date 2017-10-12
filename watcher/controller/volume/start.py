@@ -160,6 +160,7 @@ def check_out(task_id):
         Returns:
             activity_id: Activity if of the shutdown event, str.
     """
+    action = request.args.get('action')
     end_time = request.args.get('end_time')
 
     hash_key = "job.{}".format(task_id)
@@ -168,10 +169,15 @@ def check_out(task_id):
 
     # update mysql status
     conn = connect_mysql()
-    update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('analyze', task_id)
+    if action == 'checkout':
+        update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('analyze', task_id)
+    elif action == 'check':
+        update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('stage2', task_id)
     conn.cursor().execute(update_string)
     conn.commit()
 
+    
+    #if action == 'checkout':
     #aliyun_action = Aliyun('RemoveInstances', instance_id)
     #aliyun_action.request()
 
