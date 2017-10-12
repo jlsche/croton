@@ -37,8 +37,7 @@ def check_serving_status(task_id):
     task_row_count = list(cur)[0][0]
     
     cur = conn.cursor()
-    #query_string = 'SELECT SUM(raw_count), COUNT(*) from CrotonTemplate WHERE status in ("building", "stage1", "stage2");'
-    query_string = 'SELECT SUM(raw_count), COUNT(*) from CrotonTemplate WHERE status in ("init_cluster", "building", "stage2");'
+    query_string = 'SELECT SUM(raw_count), COUNT(*) from CrotonTemplate WHERE status in ("building", "stage1", "stage2");'
     cur.execute(query_string)
 
     row = list(cur)[0]
@@ -87,8 +86,7 @@ def add_task(task_id):
     conn.cursor().execute(update_string)
     conn.commit()
 
-    #aliyun_action = Aliyun('ExecuteScalingRule')
-    #aliyun_action.request()
+    start_instance()
 
     return jsonify({
         'status': 'OK',
@@ -175,14 +173,13 @@ def check_out(task_id):
         update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('stage2', task_id)
     conn.cursor().execute(update_string)
     conn.commit()
-
-    
+ 
     #if action == 'checkout':
-    #aliyun_action = Aliyun('RemoveInstances', instance_id)
-    #aliyun_action.request()
+    #stop_instance(instance_id)
 
-    return jsonify({'ActivityId': '12345'})
-    # should abort?
+    return jsonify({
+        'status': 'OK'
+    })
 
 
 @application.route('/quit/<string:task_id>', methods=['PUT'])
@@ -196,8 +193,7 @@ def force_quit(task_id):
     conn.cursor().execute(update_string)
     conn.commit()
 
-    #aliyun_action = Aliyun('RemoveInstances', instance_id)
-    #aliyun_action.request()
+    stop_instance(instance_id)
 
     return jsonify({
         'status': 'OK',
@@ -241,17 +237,15 @@ def get_task_status(task_id):
     return redis_server.get(obj_name)
 
 
-def start_machine():
-    pass
-    # call aliyun api to start machine
-    # the machine should add status message like "VM started"
-    # to mysql at the very beginning.
+def start_instance():
+    aliyun_action = Aliyun('ExecuteScalingRule')
+    aliyun_action.request()
 
 
-def stop_machine():
-    pass
-    # who can call this?
-    # call aliyun api to stop machine
+def stop_instance(instance_id):
+    aliyun_action = Aliyun('RemoveInstances', instance_id)
+    aliyun_action.request()
+
 
 
 if __name__ == '__main__':
