@@ -216,6 +216,18 @@ def list_queues():
     })
 
 
+@application.route('/jobs/<string:task_id>', methods=['GET'])
+def get_job_detail(task_id):
+    hash_key = "job.{}".format(task_id)
+    try:
+        cthr = redis_server.hget(hash_key, 'cthr')
+        gthr = redis_server.hget(hash_key, 'gthr')
+        msg = {'status': 'OK', 'cthr': cthr, 'gthr': gthr}
+    except:
+        msg = {'status': 'Error', 'message': 'No such job in queue.'}
+    return jsonify(msg)
+
+
 @application.route('/status/<string:task_id>', methods=['GET'])
 def get_task_status(task_id):
     # get status from server 

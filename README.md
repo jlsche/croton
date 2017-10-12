@@ -38,6 +38,7 @@
 	- logging to MongoDB			: POST	- ip:3000/log
 	- get task list					: GET	- ip:8011/tasks (job not yet start clustering)
 	- get job list					: GET	- ip:8011/jobs
+	- get job detail				: GET	- ip:8011/jobs/{taskid}
 
 
 
