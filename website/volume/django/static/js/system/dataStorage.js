@@ -1,7 +1,7 @@
 function dataSystem ( book ) {
 	var fixUrl = "http://118.178.253.10:3006";
-  var baseUrl = "http://192.168.10.16:3333";
-  //var fixDataServ = '../static';
+	var baseUrl = "http://172.16.123.213:3333";
+	//var fixDataServ = '../static';
 	var ctrl = this;
 	var book = book;
 	var data = Object({
