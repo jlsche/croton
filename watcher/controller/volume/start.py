@@ -176,8 +176,8 @@ def check_out(task_id):
     conn.cursor().execute(update_string)
     conn.commit()
  
-    #if action == 'checkout':
-    #stop_instance(instance_id)
+    if action == 'checkout':
+        stop_instance(instance_id)
 
     return jsonify({
         'status': 'OK'
@@ -195,7 +195,7 @@ def force_quit(task_id):
     conn.cursor().execute(update_string)
     conn.commit()
 
-    #stop_instance(instance_id)
+    stop_instance(instance_id)
 
     return jsonify({
         'status': 'OK',
@@ -234,7 +234,6 @@ def get_job_detail(task_id):
 
 @application.route('/status/<string:task_id>', methods=['GET'])
 def get_task_status(task_id):
-    # get status from server 
     obj_name = 'status:{}'.format(task_id)
     return redis_server.get(obj_name)
 

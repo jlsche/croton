@@ -4,6 +4,7 @@ function outputController(dataSystem) {
 	var ds_ctrl = dataSystem;
 	var serveDataPath = '../static';
 
+	// 按下"导出"後，輸出使用者自行定義的群組資料(面板右側)
 	this.output = function(call) {
 		var tag = new Date().getTime();
 
@@ -33,7 +34,7 @@ function outputController(dataSystem) {
 		});
 	}
 
-	// 按下"导出"後，輸出有標籤的群組
+	// 按下"导出"後，輸出所有有標籤的群組
 	this.outputCategorized = function(call) {
 		ds_ctrl.getData().ajax.exportCategorizedResult(ds_ctrl.getRecord().id, function(resp) {
 			var itemsFormatted = [];
@@ -65,6 +66,7 @@ function outputController(dataSystem) {
 	}
 
 	// 還要輸出分群結果的檔案
+	// 按下"导出典型评论"後，輸出分群結果（面板左側）
 	this.outputTypical = function(call) {
 		var tag = new Date().getTime();
 		//var params = new requestController();

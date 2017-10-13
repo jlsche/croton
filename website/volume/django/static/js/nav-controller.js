@@ -326,9 +326,9 @@ function navController(lan, dataSystem) {
 		$("#output-typical").bind("click", function() {
 			openLoading();
 			output_ctrl.outputTypical(function() {
-				output_ctrl.outputClusterResult(function() {
-					closeLoading();	
-				});	
+				//output_ctrl.outputClusterResult(function() {
+				closeLoading();	
+				//});	
 			});
 		});
 

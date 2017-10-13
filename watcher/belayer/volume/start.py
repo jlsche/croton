@@ -58,7 +58,7 @@ def monitor_clustering():
             print('task {} finished clustering'.format(_id))
 
 
-        time.sleep(600)
+        time.sleep(900)
 
 
 
