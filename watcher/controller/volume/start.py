@@ -1,6 +1,6 @@
-#import aliyun.Aliyun as Aliyun
 import redis
 import pymysql
+from aliyun import Aliyun
 from flask import Flask, request, jsonify
 
 application = Flask(__name__)
@@ -88,7 +88,7 @@ def add_task(task_id):
     conn.cursor().execute(update_string)
     conn.commit()
 
-    #start_instance()
+    start_instance()
 
     return jsonify({
         'status': 'OK',
