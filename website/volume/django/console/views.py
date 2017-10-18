@@ -24,9 +24,7 @@ def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 def connect_mysql():
-    #db =  pymysql.connect(host='localhost', user='lingtelli', passwd='lingtellimi4ma3', db='croton', charset='utf8')
     db =  pymysql.connect(host='mysql', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
-    #db =  pymysql.connect(host='192.168.10.116', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
     dbc = db.cursor()
     dbc.execute('SET NAMES utf8;')
     dbc.execute('SET CHARACTER SET utf8;')
@@ -77,19 +75,16 @@ def check(request):
     return HttpResponse("Error:")
 
 def crotonNum(request, num):
-    # View code here...
     return render(request, 'croton_index.html', {"foo": "bar"},
         content_type="text/html")
 
 def croton(request):
-    # View code here...
     t = loader.get_template('croton_index.html')
     c = {'foo': 'bar'}
     return HttpResponse(t.render(c, request),
         content_type="text/html")
 
 def croton_test(request):
-    # View code here...
     t = loader.get_template('croton_index_test.html')
     c = {'foo': 'bar'}
     return HttpResponse(t.render(c, request),
@@ -121,7 +116,6 @@ def create_post(request):
         )
 
 def big_file_download(request):
-    # do something...
     def file_iterator(file_name, chunk_size=512):
         with open(file_name) as f:
             while True:
@@ -152,7 +146,6 @@ def upload(request):
 
         if rawdata is None:
             return HttpResponse('upload fail!')
-        #dest_path = os.path.join(BASE,'data/'+str(index)+'/')
         dest_path = str(PROJECT_DIR) + static('data/' + str(index) + '/')
         if not os.path.exists(dest_path):
             os.makedirs(dest_path)
@@ -198,38 +191,20 @@ def setup(request):
             cthr = request.POST.get('cthr');
             gthr = request.POST.get('gthr');
             request_url = '{}/{}?cthr={}&gthr={}'.format(watcher_url, str(idx), cthr, gthr)
-            res = requests.put(request_url)
+            res = requests.post(request_url)
+            request_url = '{}/{}'.format(watcher_url, str(idx))
+            res = requests.get(request_url)
 
-            if res.json().get('status') == 'Error':
-                print('Error when starting task {}, message: {}'.format(idx, res.json()))
-                messages.info(request, res.json().get('message'))
-
-            #res = requests.get(base_url + 'startClustering?csvfile=' + dir_path + 'rawdata.csv&clusterthreshold='+str(cthr)+'&groupthreshold='+str(gthr))
-            #open(dir_path + "init", 'a+').close()
-            print(base_url + 'startClustering?csvfile=' + dir_path + 'rawdata.csv')
-            print(res.json())
-        elif atype == "build_cluster":
-            # no need this one
-            res = requests.get(base_url + 'dumpMysql?template_id=' + str(idx))
-            open(dir_path + "build", "a+").close()
-            print(base_url + 'dumpMysql?template_id=' + str(idx))
-            print(res.text)
         elif atype == "analyze":
             res = requests.get(base_url + 'newRecord?template_id=' + str(idx) + "&record=" + request.POST.get('record'))
-            #open(dir_path + "analyze", "a+").close()
-            print(base_url + 'newRecord?template_id=' + str(idx) + "&record=" + request.POST.get('record'))
-            print(res.text)
         elif atype == "delete":
-            print('delete')
             cur = conn.cursor()
             cur.execute("delete from CrotonTemplate where id = " + str(idx))
             conn.commit()
             request_url = '{}/{}'.format(watcher_url, str(idx))
             res = requests.delete(request_url)
         elif atype == "shift":
-            print('shift', dir_path)
             res = requests.get(base_url + 'taskshift?task_path=' + dir_path)
-            print(res.text)
         return HttpResponseRedirect('/setup/')
 
     #processing_queue = json.loads(requests.get(base_url + 'queueorder').text)['neworder']
@@ -251,32 +226,6 @@ def setup(request):
         item["time"] = date_object.strftime('%Y{y}%m{m}%d{d} %H:%M:%S').format(y='/', m='/', d='/')
 
         dir_path = os.path.join(BASE, 'data/'+str(row[0])+'/')
-
-        
-        """
-        if os.path.exists(dir_path + "error.log"):
-            with open(dir_path + 'error.log', 'r') as elog:
-                data=elog.read().replace('\n', '')
-                item["action"] = data
-        elif not os.path.exists(dir_path + "cluster_result.csv"):
-            if not os.path.isfile(dir_path + "init"):
-                item["action"] = "init_cluster"
-                #open(dir_path + "init", 'a+').close()
-            else:
-                item["action"] = "wait_cluster"
-        elif not os.path.exists(dir_path + 'cluster_finish'):
-            if not os.path.isfile(dir_path + "build"):
-                item["action"] = "build_cluster"
-                #open(dir_path + "build", "a+").close()
-            else:
-                item["action"] = "wait_build"
-        else:
-            if not os.path.isfile(dir_path + "analyze"):
-                item["action"] = "analyze"
-                #open(dir_path + "analyze", "a+").close()
-            else:
-                item["action"] = "done"
-        """
         item["action"] = item["status"]
 
         '''
@@ -297,30 +246,3 @@ def fix_order(p_templates, que, templates):
     return p_templates + templates
 
 
-"""
-
-
-$.ajax({
-    url : "../post/", // the endpoint
-    method : "POST", // http method
-    data : {
-        text : "test to post !!! ",
-        csrfmiddlewaretoken : csrf
-
-    }, // data sent with the post request
-
-    // handle a successful response
-    success : function(json) {
-        
-        console.log(json); // log the returned json to the console
-        console.log("success"); // another sanity check
-    },
-
-    // handle a non-successful response
-    error : function(xhr,errmsg,err) {
-        $('body').html(xhr.responseText); // add the error to the dom
-    }
-});
-
-
-"""

@@ -94,9 +94,9 @@ class Aliyun:
         req = requests.get(url) 
 
         try:
-            print(req.json())
+            return req.json()
         except:
-            print('Request failed')
+            return {'status': 'Error', 'message': 'Request failed'}
 
     
 
@@ -104,7 +104,8 @@ if __name__ == '__main__':
     describe_groups = Aliyun('DescribeScalingGroups')
     #describe_groups = Aliyun('ExecuteScalingRule')
     #describe_groups = Aliyun('RemoveInstances', 'i-bp13erybi4j4apt9knqb')
-    describe_groups.request()
+    #describe_groups.request()
+    print(describe_groups.request())
 
     # Available actions:
     ### 'DescribeInstances',

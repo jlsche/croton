@@ -1,3 +1,4 @@
+import time
 import redis
 import pymysql
 from aliyun import Aliyun
@@ -28,6 +29,11 @@ def connect_mysql():
     db_cursor.execute('SET character_set_connection=utf8;')
     return db
 
+def update_sql_status(task_id, status):
+    conn = connect_mysql()
+    update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format(status, task_id)
+    conn.cursor().execute(update_string)
+    conn.commit()
 
 def check_serving_status(task_id):
     conn = connect_mysql()
@@ -49,29 +55,20 @@ def check_serving_status(task_id):
 
     if (processing_row_count + task_row_count > 6000001):
         return 'Maximum row count exceeded. Currently {}.'.format(processing_row_count)
-    if (processing_vm_count >= 8):
+    if (processing_vm_count > 6):
         return 'Maximum instance count exceeded. Currently {}.'.format(processing_vm_count)
     else:
         return 'available'
 
 
-
-@application.route('/tasks/<int:task_id>', methods=['PUT'])
+@application.route('/tasks/<int:task_id>', methods=['POST'])
 def add_task(task_id):
     """
-        Receive job from websit, then perform add task to redis queue and scale instance.
+        Receive job from websit, then add task to redis queue.
 
         Argus:
             task_id: Id of the task, int.
-        Returns:
-            ActivityId: Activity id of the scaling event, str.
     """
-    serving_status = check_serving_status(task_id)
-    if serving_status != 'available':
-        return jsonify({
-            'status': 'Error',
-            'message': serving_status
-        })
 
     cthr = request.args.get('cthr')
     gthr = request.args.get('gthr')
@@ -82,18 +79,27 @@ def add_task(task_id):
     redis_server.hset(hash_key, 'gthr', gthr)
     redis_server.lpush('queue:jobs', task_id)
 
-    # update mysql status
-    conn = connect_mysql()
-    update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('building', task_id)
-    conn.cursor().execute(update_string)
-    conn.commit()
-
-    start_instance()
+    update_sql_status(task_id, 'queuing')
 
     return jsonify({
         'status': 'OK',
-        'ActivityId': 'add_task_success'
     })
+
+
+@application.route('/tasks/<int:task_id>', methods=['GET'])
+def scale_instance(task_id):
+    serving_status = check_serving_status(task_id)
+
+    if serving_status != 'available':
+        return jsonify({
+            'status': 'Queuing',
+            'message': serving_status
+        })
+
+    update_sql_status(task_id, 'building')
+    resp = aliyun_scale_up()
+    print('msg from aliyun_scale_up:', resp)
+    return jsonify(resp)
 
 
 @application.route('/tasks/<int:task_id>', methods=['DELETE'])
@@ -136,11 +142,7 @@ def check_in(instance_id):
     cthr = redis_server.hget(hash_key, 'cthr')
     gthr = redis_server.hget(hash_key, 'gthr')
 
-    # update mysql status
-    conn = connect_mysql()
-    update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('stage1', task_id)
-    conn.cursor().execute(update_string)
-    conn.commit()
+    update_sql_status(task_id, 'stage1')
 
     return jsonify({
         'status': 'OK',
@@ -167,21 +169,20 @@ def check_out(task_id):
     redis_server.hset(hash_key, 'end', end_time)
     instance_id = redis_server.hget(hash_key, 'instance')
 
-    # update mysql status
-    conn = connect_mysql()
     if action == 'checkout':
-        update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('analyze', task_id)
+        status = 'analyze'
     elif action == 'check':
-        update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('stage2', task_id)
-    conn.cursor().execute(update_string)
-    conn.commit()
+        status = 'stage2'
+    update_sql_status(task_id, status)
  
     if action == 'checkout':
-        stop_instance(instance_id)
+        aliyun_scale_down(instance_id)
 
-    return jsonify({
-        'status': 'OK'
-    })
+        task_id = redis_server.rpop('queue:jobs')
+        if task_id:
+            time.sleep(60)
+            scale_instance(task_id)
+    return jsonify({'status': 'OK'})
 
 
 @application.route('/quit/<string:task_id>', methods=['PUT'])
@@ -189,12 +190,7 @@ def force_quit(task_id):
     hash_key = "job.{}".format(task_id)
     instance_id = redis_server.hget(hash_key, 'instance')
 
-    # update mysql status
-    conn = connect_mysql()
-    update_string = "UPDATE CrotonTemplate SET status = '{}' WHERE id = '{}'".format('Error', task_id)
-    conn.cursor().execute(update_string)
-    conn.commit()
-
+    update_sql_status(task_id, 'Error')
     stop_instance(instance_id)
 
     return jsonify({
@@ -238,12 +234,12 @@ def get_task_status(task_id):
     return redis_server.get(obj_name)
 
 
-def start_instance():
+def aliyun_scale_up():
     aliyun_action = Aliyun('ExecuteScalingRule')
-    aliyun_action.request()
+    resp = aliyun_action.request()
+    return resp
 
-
-def stop_instance(instance_id):
+def aliyun_scale_down(instance_id):
     aliyun_action = Aliyun('RemoveInstances', instance_id)
     aliyun_action.request()
 
