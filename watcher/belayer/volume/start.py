@@ -6,7 +6,8 @@ import requests
 from pymongo import MongoClient
 
 
-quit_url = 'http://192.168.10.16:8011/quit'
+terminate_url = 'http://192.168.10.16:8011/tasks'
+#terminate_url = 'http://172.16.123.255:8011/tasks'
 mongo_client = MongoClient('mongo')
 db = mongo_client['log']
 
@@ -49,15 +50,13 @@ def monitor_clustering():
             if count > task_status[task_id]:
                 task_status[task_id] = count
             else:
-                res = requests.put('{}/{}'.format(quit_url, task_id))
+                res = requests.put('{}/{}'.format(terminate_url, task_id))
                 print('task {} should be terminated.'.format(task_id))
 
         diff = list(set(task_status.keys()) - set(_tasks))
         for _id in diff:
             del task_status[_id]
             print('task {} finished clustering'.format(_id))
-
-
         time.sleep(900)
 
 

@@ -178,9 +178,8 @@ def setup(request):
     cur.execute("select * from CrotonTemplate order by create_time desc")
     templates = []
     processing_templates = []
-    #base_url = 'http://localhost:3006/'
     base_url = 'http://118.178.253.10:3006/'
-    watcher_url = 'http://192.168.10.16:8011/tasks'
+    watcher_url = 'http://192.168.10.16:8011'
 
     if request.method == 'POST':
         idx = request.POST.get('idx')
@@ -190,9 +189,9 @@ def setup(request):
         if atype == "start_cluster":
             cthr = request.POST.get('cthr');
             gthr = request.POST.get('gthr');
-            request_url = '{}/{}?cthr={}&gthr={}'.format(watcher_url, str(idx), cthr, gthr)
+            request_url = '{}/tasks/{}?cthr={}&gthr={}'.format(watcher_url, str(idx), cthr, gthr)
             res = requests.post(request_url)
-            request_url = '{}/{}'.format(watcher_url, str(idx))
+            request_url = '{}/start/{}'.format(watcher_url, str(idx))
             res = requests.get(request_url)
 
         elif atype == "analyze":
@@ -201,7 +200,7 @@ def setup(request):
             cur = conn.cursor()
             cur.execute("delete from CrotonTemplate where id = " + str(idx))
             conn.commit()
-            request_url = '{}/{}'.format(watcher_url, str(idx))
+            request_url = '{}/tasks/{}'.format(watcher_url, str(idx))
             res = requests.delete(request_url)
         elif atype == "shift":
             res = requests.get(base_url + 'taskshift?task_path=' + dir_path)

@@ -7,18 +7,6 @@ from flask import Flask, request, jsonify
 application = Flask(__name__)
 
 
-# task: 按下分析按鈕後，尚未被機器領養前
-# job: 被機器領養處理中
-
-status_code = {
-    0: 'vm built',
-    2: 'preprocessing_raw_data',
-    3: 'clustering_step1',
-    4: 'clustering_step2',
-    5: 'writing result to db',
-    6: 'done'
-}
-
 redis_server = redis.Redis(host='redis', db=0, charset="utf-8", decode_responses=True)
 
 def connect_mysql():
@@ -35,107 +23,115 @@ def update_sql_status(task_id, status):
     conn.cursor().execute(update_string)
     conn.commit()
 
-def check_serving_status(task_id):
+def get_task_queue():
+    conn = connect_mysql()
+    cur = conn.cursor()
+    query_string = 'SELECT id from CrotonTemplate WHERE status = "queuing" ORDER BY create_time;'
+    cur.execute(query_string)
+    queue = [x[0] for x in cur]
+    return queue
+
+def pop_task():
+    ''' Return the first task with status "building".
+    '''
+    conn = connect_mysql()
+    cur = conn.cursor()
+    query_string = 'SELECT id from CrotonTemplate WHERE status = "building" ORDER BY create_time LIMIT 1;'
+    cur.execute(query_string)
+    try:
+        task_id = list(cur)[0][0]
+    except IndexError:
+        task_id = None
+    return task_id
+
+def serving_status():
+    ''' Return currently processing row count and number of instance scaled.
+    '''
+    conn = connect_mysql()
+    cur = conn.cursor()
+    query_string = 'SELECT SUM(raw_count), COUNT(*) from CrotonTemplate WHERE status in ("building", "stage1", "stage2");'
+    cur.execute(query_string)
+
+    row = list(cur)[0]
+    num_row_processing = row[0]
+    num_scaled_instance = row[1]
+    return num_row_processing, num_scaled_instance
+
+def check_affordable(task_id, num_row_processing, num_scaled_instance):
     conn = connect_mysql()
     cur = conn.cursor()
     query_string = 'SELECT raw_count from CrotonTemplate WHERE id = {};'.format(task_id)
     cur.execute(query_string)
     task_row_count = list(cur)[0][0]
     
-    cur = conn.cursor()
-    query_string = 'SELECT SUM(raw_count), COUNT(*) from CrotonTemplate WHERE status in ("building", "stage1", "stage2");'
-    cur.execute(query_string)
-
-    row = list(cur)[0]
-    processing_row_count = row[0]
-    processing_vm_count = row[1]
-
-    if processing_row_count is None:
-        processing_row_count = 0
-
-    if (processing_row_count + task_row_count > 6000001):
-        return 'Maximum row count exceeded. Currently {}.'.format(processing_row_count)
-    if (processing_vm_count > 6):
-        return 'Maximum instance count exceeded. Currently {}.'.format(processing_vm_count)
+    if num_row_processing is None:
+        num_row_processing = 0
+    if (num_row_processing + task_row_count > 6000000):
+        return 'Maximum row count exceeded. Currently {}.'.format(num_row_processing)
+    if (num_scaled_instance >= 6):
+        return 'Maximum instance count exceeded. Currently {}.'.format(num_scaled_instance)
     else:
         return 'available'
 
 
 @application.route('/tasks/<int:task_id>', methods=['POST'])
 def add_task(task_id):
-    """
-        Receive job from websit, then add task to redis queue.
-
-        Argus:
-            task_id: Id of the task, int.
-    """
-
+    # write task detail to redis set
     cthr = request.args.get('cthr')
     gthr = request.args.get('gthr')
-    hash_key = 'job.{}'.format(task_id) 
 
-    #redis_server.hset(hash_key, 'task_id', task_id)
+    hash_key = 'task.{}'.format(task_id) 
     redis_server.hset(hash_key, 'cthr', cthr)
     redis_server.hset(hash_key, 'gthr', gthr)
-    redis_server.lpush('queue:jobs', task_id)
 
+    # update task status
     update_sql_status(task_id, 'queuing')
 
     return jsonify({
         'status': 'OK',
     })
 
+@application.route('/start/<int:task_id>', methods=['GET'])
+def start(task_id):
+    num_row_processing, num_scaled_instance = serving_status()
+    affordable_msg = check_affordable(task_id, num_row_processing, num_scaled_instance)
 
-@application.route('/tasks/<int:task_id>', methods=['GET'])
-def scale_instance(task_id):
-    serving_status = check_serving_status(task_id)
-
-    if serving_status != 'available':
-        return jsonify({
-            'status': 'Queuing',
-            'message': serving_status
-        })
-
-    update_sql_status(task_id, 'building')
-    resp = aliyun_scale_up()
-    print('msg from aliyun_scale_up:', resp)
-    return jsonify(resp)
+    data = {}
+    if affordable_msg == 'available':
+        resp = aliyun_scale_up()
+        update_sql_status(task_id, 'building')
+        data = {'status': 'OK'}
+    else:
+        data = {'status': 'Queuing', 'message': affordable_msg}
+    return jsonify(data)
 
 
 @application.route('/tasks/<int:task_id>', methods=['DELETE'])
 def del_task(task_id):
-    """
-        Receive job from websit and delete task from redis queue.
+    """ Receive task from websit and delete task from redis queue.
 
         Argus:
             task_id: Id of the task, int.
         Returns:
             resp: Add success, bool.
     """
-    resp = redis_server.lrem('queue:jobs', num=1, value=task_id)
-    hash_key = 'job.{}'.format(task_id) 
+    hash_key = 'task.{}'.format(task_id) 
     redis_server.delete(hash_key)
-    return jsonify(redis_server.lrange('queue:jobs', 0, -1))
+    return jsonify({'status': 'OK', 'message': 'Job Deleted'})
 
 
 @application.route('/jobs/<string:instance_id>', methods=['POST'])
 def check_in(instance_id):
+    """ The scaled instance will call this api to adopt a task.
     """
-        Receive call from scaled instance and assign job.
-
-        Argus:
-            instance_id: Instance id of the instance, str.
-        Returns:
-            status: Status statement, str.
-            task_id: Task id for the instance, int.
-    """
-    task_id = redis_server.rpop('queue:jobs')
+    task_id = pop_task()
     if task_id is None:
-        return jsonify({'status': 'Error', 'message': 'No jobs in queue'})
+        aliyun_scale_down(instance_id)
+        return jsonify({'status': 'Error', 'message': 'No task in queue'})
 
     start_time = request.args.get('start_time')
+    hash_key = "task.{}".format(task_id)
 
-    hash_key = "job.{}".format(task_id)
     redis_server.hset(hash_key, 'instance', instance_id)
     redis_server.hset(hash_key, 'start', start_time)
 
@@ -154,78 +150,61 @@ def check_in(instance_id):
 
 @application.route('/jobs/<string:task_id>', methods=['PUT'])
 def check_out(task_id):
-    """
-        Receive call from scaled instance and shut instance down.
-
-        Argus:
-            instance_id: Instance id of the instance, str.
-        Returns:
-            activity_id: Activity if of the shutdown event, str.
+    """ The scaled instance will call this api to update clustering status.
     """
     action = request.args.get('action')
     end_time = request.args.get('end_time')
 
-    hash_key = "job.{}".format(task_id)
-    redis_server.hset(hash_key, 'end', end_time)
+    hash_key = "task.{}".format(task_id)
     instance_id = redis_server.hget(hash_key, 'instance')
 
-    if action == 'checkout':
-        status = 'analyze'
-    elif action == 'check':
-        status = 'stage2'
-    update_sql_status(task_id, status)
+    if action == 'check':
+        update_sql_status(task_id, 'stage2')
+        redis_server.hset(hash_key, 'end', end_time)
+    elif action == 'checkout':
+        update_sql_status(task_id, 'analyze')
+        redis_server.delete(hash_key)
  
-    if action == 'checkout':
         aliyun_scale_down(instance_id)
-
-        task_id = redis_server.rpop('queue:jobs')
-        if task_id:
+        task_queue = get_task_queue()
+        if len(task_queue) > 0:
             time.sleep(60)
-            scale_instance(task_id)
+            start(task_queue[0])
     return jsonify({'status': 'OK'})
 
 
-@application.route('/quit/<string:task_id>', methods=['PUT'])
-def force_quit(task_id):
-    hash_key = "job.{}".format(task_id)
+@application.route('/tasks/<string:task_id>', methods=['PUT'])
+def delete_task(task_id):
+    hash_key = "task.{}".format(task_id)
     instance_id = redis_server.hget(hash_key, 'instance')
 
     update_sql_status(task_id, 'Error')
-    stop_instance(instance_id)
+    aliyun_scale_down(instance_id)
 
     return jsonify({
         'status': 'OK',
-        'message': 'Shutting down instance.'
+        'message': 'task {} deleted.'
     })
-
-
-@application.route('/jobs', methods=['GET'])
-def list_jobs():
-    job_dict = {}
-    for job in redis_server.keys():
-        if job.startswith("job"):
-            job_dict[job] = redis_server.hgetall(job)
-    return jsonify(job_dict)
 
 
 @application.route('/tasks', methods=['GET'])
-def list_queues():
-    return jsonify({
-        'size': len(redis_server.lrange('queue:jobs', 0, -1)),
-        'members': redis_server.lrange('queue:jobs', 0, -1)
-    })
+def list_tasks():
+    task_dict = {}
+    for hash_key in redis_server.keys():
+        task_dict[hash_key] = redis_server.hgetall(hash_key)
+    return jsonify({'status': 'OK', 'data': task_dict})
 
 
-@application.route('/jobs/<string:task_id>', methods=['GET'])
-def get_job_detail(task_id):
-    hash_key = "job.{}".format(task_id)
+@application.route('/tasks/<string:task_id>', methods=['GET'])
+def get_task_detail(task_id):
+    hash_key = "task.{}".format(task_id)
     try:
-        cthr = redis_server.hget(hash_key, 'cthr')
-        gthr = redis_server.hget(hash_key, 'gthr')
-        msg = {'status': 'OK', 'cthr': cthr, 'gthr': gthr}
+        data = redis_server.hgetall(hash_key)
+        msg = {'status': 'OK', 'data': data}
     except:
-        msg = {'status': 'Error', 'message': 'No such job in queue.'}
-    return jsonify(msg)
+        msg = {'status': 'Error', 'message': 'No such task in queue.'}
+    finally:
+        return jsonify(msg)
 
 
 @application.route('/status/<string:task_id>', methods=['GET'])
