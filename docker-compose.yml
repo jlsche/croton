@@ -15,6 +15,7 @@ services:
         container_name: mysql
         volumes:
             - ./mysql/log:/var/lib/mysql
+            - ./mysql/mysql-config.cnf:/etc/my.cnf
         environment:
             MYSQL_DATABASE: "croton"
             MYSQL_ROOT_PASSWORD: lingtelli
