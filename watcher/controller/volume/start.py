@@ -107,7 +107,7 @@ def start(task_id):
 
 
 @application.route('/tasks/<int:task_id>', methods=['DELETE'])
-def del_task(task_id):
+def delete_task(task_id):
     """ Receive task from websit and delete task from redis queue.
 
         Argus:
@@ -115,10 +115,19 @@ def del_task(task_id):
         Returns:
             resp: Add success, bool.
     """
-    hash_key = 'task.{}'.format(task_id) 
-    redis_server.delete(hash_key)
-    return jsonify({'status': 'OK', 'message': 'Job Deleted'})
+    hash_key = "task.{}".format(task_id)
+    instance_id = redis_server.hget(hash_key, 'instance')
 
+    if instance_id:
+        aliyun_scale_down(instance_id)
+
+    if hash_key:
+        redis_server.delete(hash_key)
+
+    return jsonify({
+        'status': 'OK',
+        'message': 'task {} deleted.'
+    })
 
 @application.route('/jobs/<string:instance_id>', methods=['POST'])
 def check_in(instance_id):
@@ -174,7 +183,7 @@ def check_out(task_id):
 
 
 @application.route('/tasks/<string:task_id>', methods=['PUT'])
-def delete_task(task_id):
+def interrupt_task(task_id):
     hash_key = "task.{}".format(task_id)
     instance_id = redis_server.hget(hash_key, 'instance')
 
@@ -192,7 +201,7 @@ def list_tasks():
     task_dict = {}
     for hash_key in redis_server.keys():
         task_dict[hash_key] = redis_server.hgetall(hash_key)
-    return jsonify({'status': 'OK', 'data': task_dict})
+    return jsonify({'data': task_dict})
 
 
 @application.route('/tasks/<string:task_id>', methods=['GET'])
