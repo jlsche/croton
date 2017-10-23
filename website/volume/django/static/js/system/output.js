@@ -99,7 +99,17 @@ function outputController(dataSystem) {
 	}
 
 	this.outputRawData = function(call) {
-		var task = ds_ctrl.getTemplate();
+		var task_id = ds_ctrl.getTemplate().id;
+        $.get(serveDataPath + '/data/' + task_id + '/rawdata.csv', function( data ) {
+        	var csvData = new Blob([data], { type: "text/csv;charset=utf-8;" });
+        	saveAs(csvData, lang.getString("output-name02a") + new Date().getTime() + ".csv");
+        	notUndefined(call);
+		})
+        .fail(function() {
+        	console.log("Error Export Cluster Result - Cannot locate file location.");
+        	notUndefined(call);
+        });
+		/*
 		ds_ctrl.getData().ajax.getRowData(task.id, function( msg ) {
 			if ( msg.code == 1 ){
 				var name = "rawdata.csv";
@@ -119,6 +129,7 @@ function outputController(dataSystem) {
 				notUndefined(call);
 			}
 		})
+		*/
 	}
 
 	// 輸出原始的分群結果
