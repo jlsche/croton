@@ -20,6 +20,12 @@ from django.templatetags.static import static
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 BASE = os.path.dirname(os.path.abspath(__file__))
 
+#base_url = 'http://118.178.253.10:3006'
+#watcher_url = 'http://118.178.253.10:8011'
+
+base_url = 'http://192.168.10.16:3006'
+watcher_url = 'http://192.168.10.16:8011'
+
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
@@ -53,14 +59,6 @@ def handle_uploaded_file(f, path):
             dest.write(chunk)
     return True
     #return is_utf8(path)
-
-def is_valid_csv(dir_id):
-    resp = requests.get('http://118.178.253.10/check_format/' + str(dir_id)).text
-    print("resp of is_valid_csv", resp)
-    if 'OK' in resp:
-        return True
-    else:
-        return False
 
 def insert_db(conn, index, name, count):
     conn.cursor().execute("insert into CrotonTemplate (id, name, lang, raw_count, status) values (%s, %s, %s, %s, %s)", (index, name, 'zhcn', count, 'init_cluster'))
@@ -136,7 +134,6 @@ def upload(request):
     raw_utf_flag = True
     role_utf_flag = True
     pov_utf_flag = True
-    pov_csv_flag = True
 
     if request.method == 'POST':
         rawdata = request.FILES['rawdata']
@@ -155,7 +152,6 @@ def upload(request):
             role_utf_flag = handle_uploaded_file(role, get_dest_path('role.csv', index))
         if pov is not None:
             pov_utf_flag = handle_uploaded_file(pov, get_dest_path('pov.csv', index))
-            pov_csv_flag = is_valid_csv(index) 
 
         if not raw_utf_flag:
             messages.info(request, 'rawdata上傳失敗，請重新上傳符合UTF-8格式之檔案')
@@ -163,10 +159,8 @@ def upload(request):
             messages.info(request, 'role上傳失敗，請重新上傳符合UTF-8格式之檔案')
         if not pov_utf_flag:
             messages.info(request, 'pov上傳失敗，請重新上傳符合UTF-8格式之檔案')
-        if not pov_csv_flag:
-            messages.info(request, 'pov上傳失敗，請重新上傳符合CSV格式之檔案')
 
-        if raw_utf_flag and role_utf_flag and pov_utf_flag and pov_csv_flag:
+        if raw_utf_flag and role_utf_flag and pov_utf_flag:
             insert_db(conn, index, name, sum(1 for row in open(get_dest_path('rawdata.csv', index))))
         return HttpResponseRedirect('/setup/')
 
@@ -178,8 +172,6 @@ def setup(request):
     cur.execute("select * from CrotonTemplate order by create_time desc")
     templates = []
     processing_templates = []
-    base_url = 'http://118.178.253.10:3006/'
-    watcher_url = 'http://192.168.10.16:8011'
 
     if request.method == 'POST':
         idx = request.POST.get('idx')
@@ -193,9 +185,11 @@ def setup(request):
             res = requests.post(request_url)
             request_url = '{}/start/{}'.format(watcher_url, str(idx))
             res = requests.get(request_url)
-
         elif atype == "analyze":
-            res = requests.get(base_url + 'newRecord?template_id=' + str(idx) + "&record=" + request.POST.get('record'))
+            template_id = str(idx)
+            record_id = request.POST.get('record')
+            request_url = '{}/newRecord?template_id={}&record={}'.format(base_url, template_id, record_id)
+            res = requests.get(request_url)
         elif atype == "delete":
             cur = conn.cursor()
             cur.execute("delete from CrotonTemplate where id = " + str(idx))
@@ -203,10 +197,11 @@ def setup(request):
             request_url = '{}/tasks/{}'.format(watcher_url, str(idx))
             res = requests.delete(request_url)
         elif atype == "shift":
-            res = requests.get(base_url + 'taskshift?task_path=' + dir_path)
+            request_url = '{}/taskshift?task_path={}'.format(base_url, dir_path)
+            res = requests.get(request_url)
         return HttpResponseRedirect('/setup/')
 
-    #processing_queue = json.loads(requests.get(base_url + 'queueorder').text)['neworder']
+    #processing_queue = json.loads(requests.get(base_url + '/queueorder').text)['neworder']
     #processing_queue = [int(x[len(BASE)+6: -1]) for x in processing_queue]
     processing_queue = []
 
