@@ -54,7 +54,18 @@ function group_ctrl (main, data) { 	// main: dataSystem
 			var rid = parseInt( entry.attr("rid"));
 			var record = main.getRecordById(rid);
 			var group = record.group_entry();
-
+			
+			openLoading();
+			ajax.getGroupSentence(group.id, 0, group.total, function(msg) {
+				if ( msg.type ) {
+					var data = msg.data;
+					group.sentence = data;
+					ctrl.sentenceView(data);
+					closeLoading();
+				}
+			})
+			// WTF is the if-else condition for???
+			/*
 			if ( group.sentence.length != group.total ){
 				openLoading();
 				console.log( group.total );
@@ -70,6 +81,7 @@ function group_ctrl (main, data) { 	// main: dataSystem
 			}else{
 				ctrl.sentenceView(group.sentence);
 			}
+			*/
 		}
 		e.unbind("click");
 		e.bind("click", evt);
