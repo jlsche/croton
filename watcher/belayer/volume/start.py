@@ -13,7 +13,7 @@ db = mongo_client['log']
 
 
 def connect_mysql():
-    db =  pymysql.connect(host='mysql', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
+    db = pymysql.connect(host='mysql', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
     db_cursor = db.cursor()
     db_cursor.execute('SET NAMES utf8;')
     db_cursor.execute('SET CHARACTER SET utf8;')

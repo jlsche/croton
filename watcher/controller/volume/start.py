@@ -138,7 +138,7 @@ def check_in(instance_id):
         aliyun_scale_down(instance_id)
         return jsonify({'status': 'Error', 'message': 'No task in queue'})
 
-    start_time = request.args.get('start_time')
+    start_time = request.args.get('start')
     hash_key = "task.{}".format(task_id)
 
     redis_server.hset(hash_key, 'instance', instance_id)
