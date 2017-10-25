@@ -130,6 +130,8 @@ services:
             - watcher_redis_net
 
     watcher:
+        depends_on:
+            - mysql
         build: ./watcher/controller
         container_name: watcher
         command: python3 start.py
@@ -150,6 +152,8 @@ services:
 
 
     belayer:
+        depends_on:
+            - mysql
         build: ./watcher/belayer
         container_name: belayer
         command: python3 start.py
