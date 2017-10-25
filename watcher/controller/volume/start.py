@@ -162,7 +162,7 @@ def check_out(task_id):
     """ The scaled instance will call this api to update clustering status.
     """
     action = request.args.get('action')
-    end_time = request.args.get('end_time')
+    end_time = request.args.get('end')
 
     hash_key = "task.{}".format(task_id)
     instance_id = redis_server.hget(hash_key, 'instance')
