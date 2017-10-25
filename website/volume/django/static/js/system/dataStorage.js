@@ -445,8 +445,9 @@ function dataSystem ( book ) {
 	data.ajax.createLabel = function(id, name, call){
 		var url = baseUrl + "/label";
 		console.log(url);
-		$.post(url, {"record_id": id, "name": name}, function(msg) {
+		$.post(url, JSON.stringify({"record_id": id, "name": name}), function(msg) {
 			if ( msg.success == true ) {
+				var r = new Object();
 				r.code = 1;
 				r.data = new Object();
 				r.data.label_id = msg.data.id;
@@ -457,26 +458,10 @@ function dataSystem ( book ) {
 			console.log(r);
 			notUndefined(call, r);
 		});
-		/*
-		$.ajax({
-			url: url,
-			headers:{'Content-Type': 'application/json'},
-			crossOrigin : true,
-			method:"POST",
-			data: {"record_id": id, "name": name} ,
-			dataType : "json",
-			statusCode: {			
-				200: function(msg){
-					var r = new Object();
-				}
-			}
-		});	
-		*/
 	}
 
 	data.ajax.editLabel = function(id, name, call){
-		//var url = baseUrl + "/label/" + id;
-		var url = "https://lingbot-api.lingtelli.com/croton/label/" + id;
+		var url = baseUrl + "/label/" + id;
 		console.log(url)
 
 		$.ajax({
@@ -891,8 +876,6 @@ function dataSystem ( book ) {
 		data.controller.group.showFilterView( temp );
 	}
 
-
-
 	/* view event */
 	this.updateSingleGroup = function( rid, dbid, cid){
 		openLoading();
@@ -911,32 +894,28 @@ function dataSystem ( book ) {
 			closeLoading();
 		})
 	}
+
 	this.combineLabel = function(){
 		var set = ctrl.getSelectedLabel();
-		//console.log(set);
 		var text = ""
 		for ( var ind = 0 ; ind < set.length ; ind++){
 			var str = set[ind];
-			text+=str;
-			if ( ind != ( set.length - 1 )){
-				text+=","
+			text += str;
+			if ( ind != ( set.length - 1 )) {
+				text += ",";
 			}
 		}
 		openLoading();
 		data.ajax.combineLabel(text, function(msg){
-			console.log(msg)
-
-			data.controller.ctrl.closeView("combine")
-			closeLoading();
+			data.controller.ctrl.closeView("combine");
 			if (msg.code == 1 ){
-
 				var info = msg.data;
 				var id = parseInt(info.id);
 
-				for ( var ind = 0 ; ind < set.length ; ind++){
+				for ( var ind = 0 ; ind < set.length ; ind++) {
 					var num = parseInt(set[ind]);
-					if ( num != id ){
-						for ( var n = 0 ; n < data.class.length ; n++ ){
+					if ( num != id ) {
+						for ( var n = 0 ; n < data.class.length ; n++ ) {
 							var curLabel = data.class[n];
 							if ( curLabel.id == num ){
 								data.class.splice( n, 1);
@@ -945,9 +924,9 @@ function dataSystem ( book ) {
 					}
 				}
 
-				for ( var ind = 0 ; ind < set.length ; ind++){
+				for ( var ind = 0 ; ind < set.length ; ind++) {
 					var records = ctrl.getRecrodSetByLabelId( set[ind] );
-					for ( var n = 0 ; n < records.length ; n++ ){
+					for ( var n = 0 ; n < records.length ; n++ ) {
 						records[n].class = id;
 						data.controller.group.updateCombinedGroup( records[n].id, id);
 					}
@@ -958,7 +937,8 @@ function dataSystem ( book ) {
 				ctrl.renderGroups();
 				ctrl.updateClassListView();
 			}else{
-				ctrl.errorView( lang.getString("combine-fail")  )
+				ctrl.errorView(lang.getString("combine-fail"));
+				closeLoading();
 			}
 		})
 	}
