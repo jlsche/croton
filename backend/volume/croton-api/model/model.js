@@ -21,7 +21,7 @@ module.exports.operate = function(payload, callback) {
     }
 
     if (offset != null) {
-        limit = 100;
+        limit = 25;
         offset = parseInt(offset);
     }
    
@@ -143,4 +143,29 @@ module.exports.exportLabels = function(payload, callback) {
         });
         callback(data);
     });
+}
+
+
+module.exports.label = function(method, payload, callback) {
+    const r_id = payload.record_id;
+    const id = payload.id;
+    const name = payload.name;
+
+    if (method == 'Create') {
+        db.Label.create({
+            record_id: r_id, 
+            name: name,
+        }).then(data => {
+            console.log('Create a new label \n ' + JSON.stringify(data));
+            callback(data);
+        });
+    } else if (method == 'Update') {
+        const values =  { name: name };
+        const options = { where: { id: id } };
+
+        db.Label.update( values, options).then(data => {
+           console.log('Update a label \n' + JSON.stringify(data));
+           callback(data);
+        });
+    }
 }

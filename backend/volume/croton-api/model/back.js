@@ -1,28 +1,13 @@
 var mysql = require('mysql');
-var config = require('./config');
 
-/*
 var pool = mysql.createPool({
     connectionLimit: 10,
-    //host           : '192.168.10.116',
-    host           : 'mysql',
-		//
-		port					 : '',
-		//
+    host           : '192.168.10.116',
     user           : 'lingtelli',
     password       : 'lingtelli',
     database       : 'croton'
 });
-*/
 
-var pool = mysql.createPool({
-    connectionLimit: 10,
-    host           : config.db.host,
-		port					 : config.db.port,
-    user           : config.db.user,
-    password       : config.db.password,
-    database       : config.db.database
-});
 
 module.exports.getGroup = function(payload, callback) {
     var query = "";
@@ -40,7 +25,7 @@ module.exports.getGroup = function(payload, callback) {
         query = "SELECT id as group_id, sentence, total "+ 
                 "FROM CrotonGroup "+
                 "WHERE template_id=? "+
-                "LIMIT 100 "+ 
+                "LIMIT 25 "+ 
                 "OFFSET "+parseInt(offset);
     }
 
@@ -78,7 +63,7 @@ module.exports.filterGroup = function(payload, callback) {
         query+="AND w.class_id in ("+labels+") "
     }
 
-    query += "LIMIT 100 "+
+    query += "LIMIT 25 "+
              "OFFSET "+parseInt(offset);
 
     console.log(query);

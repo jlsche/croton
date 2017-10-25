@@ -1,7 +1,7 @@
 function dataSystem ( book ) {
 	var fixUrl = "http://116.62.247.165:3006";
-	//var baseUrl = "http://116.62.247.165:3333";
-	var baseUrl = "http://192.168.10.16:3333";
+	var baseUrl = "http://116.62.247.165:3333";
+	//var baseUrl = "http://192.168.10.16:3333";
 	var ctrl = this;
 	var book = book;
 	var data = Object({
@@ -443,40 +443,48 @@ function dataSystem ( book ) {
 	}
 
 	data.ajax.createLabel = function(id, name, call){
-		var url = fixUrl + "/createLabel?record_id=" + id + "&class=" + name;
-		console.log(url)
+		var url = baseUrl + "/label";
+		console.log(url);
+		$.post(url, {"record_id": id, "name": name}, function(msg) {
+			if ( msg.success == true ) {
+				r.code = 1;
+				r.data = new Object();
+				r.data.label_id = msg.data.id;
+				r.data.name = name;
+				r.data.group_count = 0;
+				r.data.comment_count = 0;
+			}			
+			console.log(r);
+			notUndefined(call, r);
+		});
+		/*
 		$.ajax({
 			url: url,
-			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-			crosOrigin : true,
-			method:"GET",
+			headers:{'Content-Type': 'application/json'},
+			crossOrigin : true,
+			method:"POST",
+			data: {"record_id": id, "name": name} ,
 			dataType : "json",
 			statusCode: {			
 				200: function(msg){
 					var r = new Object();
-					if ( msg.code == 1 ) {
-						r.code = 1;
-						r.data = new Object();
-						r.data.label_id = msg.data.id;
-						r.data.name = name;
-						r.data.group_count = 0;
-						r.data.comment_count = 0;
-					}			
-					console.log(r);
-					notUndefined(call, r);
 				}
 			}
 		});	
+		*/
 	}
 
 	data.ajax.editLabel = function(id, name, call){
-		var url = fixUrl+"/editLabel?id="+id+"&name="+name;
+		//var url = baseUrl + "/label/" + id;
+		var url = "https://lingbot-api.lingtelli.com/croton/label/" + id;
 		console.log(url)
+
 		$.ajax({
 			url: url,
-			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+			headers:{'Content-Type': 'application/json; charset=UTF-8'},
 			crossOrigin : true,
-			method:"GET",
+			method:"PUT",
+			data: JSON.stringify({"name": name}),
 			dataType : "json",
 			statusCode: {			
 				200: function(msg){

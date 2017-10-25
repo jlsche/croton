@@ -20,11 +20,11 @@ from django.templatetags.static import static
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 BASE = os.path.dirname(os.path.abspath(__file__))
 
-#base_url = 'http://118.178.253.10:3006'
-#watcher_url = 'http://118.178.253.10:8011'
+base_url = 'http://118.178.253.10:3006'
+watcher_url = 'http://118.178.253.10:8011'
 
-base_url = 'http://192.168.10.16:3006'
-watcher_url = 'http://192.168.10.16:8011'
+#base_url = 'http://192.168.10.16:3006'
+#watcher_url = 'http://192.168.10.16:8011'
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")

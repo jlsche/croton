@@ -1,15 +1,9 @@
 const Sequelize = require('sequelize');
 
-const database = 'croton';
-const username = 'lingtelli';
-const password = 'lingtelli';
-/*
-const sequelize = new Sequelize(database, username, password, {
-    //host: '192.168.10.116',
-    host: 'mysql',
-		//
-		port: '',
-		//
+const database = require('../config/database');
+
+const sequelize = new Sequelize(database.name, database.username, database.password, {
+    host: database.host,
     dialect: 'mysql',
     pool: {
         max: 5,
@@ -17,20 +11,6 @@ const sequelize = new Sequelize(database, username, password, {
         idle: 10000
     },
 });
-*/
-
-var config  = require('./config')
-const sequelize = new Sequelize(database, username, password, {
-    host: config.db.host,
-    dialect: 'mysql',
-    pool: {
-        max: 5,
-        min: 0,
-        idle: 10000
-    },
-});
-
-
 
 sequelize
     .authenticate()
@@ -93,7 +73,8 @@ module.exports.Label = sequelize.define('label', {
     label_id: {
         type: Sequelize.INTEGER,
         field: 'id',
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true,
     },
     record_id: {
         type: Sequelize.INTEGER,
