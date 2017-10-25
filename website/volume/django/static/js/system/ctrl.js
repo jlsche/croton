@@ -277,7 +277,7 @@ function controller_ctrl (main, data) {
 						set.push(obj);
 				}
 			}
-			main._splitLabel(set);
+			main.splitLabel(set);
 		});
 
 		btn.cancel.bind("click", function(){
@@ -324,7 +324,7 @@ function controller_ctrl (main, data) {
 			labels: [label.label_id]
 		});
 		openLoading();
-		main.getData().ajax.test_loadGroups(main.getTemplate().id, params, function(resp) {
+		main.getData().ajax.loadGroups(main.getTemplate().id, params, function(resp) {
 			var dataset = new Array();
 			for ( var ind = 0 ; ind < resp.data.length ; ind++ ) {
 				var data = resp.data[ind];

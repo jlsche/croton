@@ -70,7 +70,7 @@ function outputController(dataSystem) {
 	this.outputTypical = function(call) {
 		var tag = new Date().getTime();
 		//var params = new requestController();
-		ds_ctrl.getData().ajax.test_loadGroups(ds_ctrl.getTemplate().id, {}, function(resp) {
+		ds_ctrl.getData().ajax.loadGroups(ds_ctrl.getTemplate().id, {}, function(resp) {
 			var itemsFormatted = [];
 			var headers = {
 				col1: '组别',

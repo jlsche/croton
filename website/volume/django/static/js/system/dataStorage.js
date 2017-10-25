@@ -58,15 +58,13 @@ function dataSystem ( book ) {
 			var r = new Object();
 			var set = new Array();
 			console.log(res);
-			for (var ind = 0 ; ind < res.length ; ind++ ) {
+			for ( var ind = 0 ; ind < res.length ; ind++ ) {
 				var obj = res[ind];
-
 				var id = ind + 1;
 				var name = obj.name;
 				var members = new Array();
 				if (obj.processes.length > 0)
 					members = obj.processes[0].group.sentence;
-
 				set.push(
 					new Object({
 						id : id,
@@ -83,7 +81,7 @@ function dataSystem ( book ) {
 		});
 	}
 
-	data.ajax.updateRecord = function( id, class_id, call ){
+	data.ajax.updateRecord = function( id, class_id, call ) {
 		var url = fixUrl+"/updateGroup2?id="+id+"&class_id="+class_id;
 		console.log(url);
 		$.ajax({
@@ -125,7 +123,6 @@ function dataSystem ( book ) {
 		});	
 	}
 
-	///keywordSearch?template_id=TemplateID&keywords=KEYWORDS
 	data.ajax.getBlockSearchGroup = function( id, text, call ){
 		var url = fixUrl + "/keywordSearch?template_id=" + id + "&keywords=" + text;
 		console.log(url);
@@ -154,16 +151,9 @@ function dataSystem ( book ) {
 			dataType : "json",
 			statusCode: {			
 				200: function(msg){
-					//console.log(msg)
 					var r = new Object();
 					r.type = true;
 					r.data = msg.sentence;
-					/*var g = ctrl.getGroupById(parseInt(id));
-					console.log(g)
-					var data = r.data;
-					for ( var ind = 0 ; ind < data.length ; ind++ ){
-						g.sentence.push(data[ind]);
-					}*/
 					notUndefined(call, r);
 				},
 				400 : function(){
@@ -174,7 +164,6 @@ function dataSystem ( book ) {
 						name : "template_name",
 						id : 0
 					}];
-
 					notUndefined(call, r);
 				},
 				404 : function(){
@@ -192,15 +181,13 @@ function dataSystem ( book ) {
 	}
 	data.ajax.getTemplateList = function(call) {
 		$.ajax({
-			url: fixUrl+"/getTemplateList",
-			//url: url,
+			url: fixUrl + "/getTemplateList",
 			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 			//crossOrigin:true,
 			method:"GET",
 			dataType : "json",
 			statusCode: {			
 				200: function(msg){
-					//console.log(msg)
 					var r = new Object();
 					r.type = true;
 					r.data = msg;
@@ -232,7 +219,7 @@ function dataSystem ( book ) {
 
 	data.ajax.getRecordList = function(id, call){
 		$.ajax({
-			url: fixUrl+"/getRecordByTemplate?template_id=" + id,
+			url: fixUrl + "/getRecordByTemplate?template_id=" + id,
 			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 			crossOrigin:true,
 			method:"GET",
@@ -265,7 +252,7 @@ function dataSystem ( book ) {
 	}
 
 	data.ajax.getClass = function( id, call ){
-		var url = fixUrl+"/getLabelList?id=" + id;
+		var url = fixUrl + "/getLabelList?id=" + id;
 		console.log(url)
 		$.ajax({
 			url: url,
@@ -277,7 +264,6 @@ function dataSystem ( book ) {
 				200: function(msg){
 					console.log('Resp of getClass:');
 					console.log(msg);
-					//msg = Array.prototype.slice.call(msg, offset, offset+50);
 					if ( msg.code == 1 ){
 						var data = msg.data.entry;
 						for ( var ind = 1; ind < (data.length+1) ; ind++){
@@ -348,11 +334,8 @@ function dataSystem ( book ) {
 						r.data.sort( function( a, b ){
 							return a.id - b.id;
 						});
-
-						//console.log(r.data)
 						notUndefined(call, r);
 					}
-					
 				},
 				404 : function(){
 					console.log("404 with get template");
@@ -393,45 +376,9 @@ function dataSystem ( book ) {
 		});	
 	}
 
-	data.ajax.loadProcess = function(record_id, params, call) {
-		var url = baseUrl + "/process/" + record_id;
-		$.getJSON( url, $.param(params) )
-		.success( function( res ) {
-			var r = new Object();
-			r.type = true;
-			var set = new Array();
-			for ( var ind = 0 ; ind < res.length ; ind++ ) {
-				var obj = res[ind];
-				var v = new Array();
-							
-				set.push(
-					new Object({
-						id : obj.pid,
-						db_id : obj.process_id,
-						group : obj.group_id,
-						class: obj.label_id,
-						group_entry : function() {
-							var id = this.group;
-							return ctrl.getGroupById(id);
-						}
-					})
-				);
-			}
-			r.data = set;
-			r.data.sort( function( a, b ){
-				return a.id - b.id;
-			});
-			notUndefined(call, r);
-		})
-		.fail(function() {
-			console.log("Request Failed.");
-		});
-	}
-
 	data.ajax.getGroupSize = function(id, params, call) {
 		console.log(params);
 		var url = baseUrl + "/group/" + id;
-		//var url = baseUrl + "/group/size/" + id;
 		$.getJSON( url, $.param( params ) )
 		.success( function( res ) {
 			var r = new Object();
@@ -443,31 +390,7 @@ function dataSystem ( book ) {
 		});
 	}
 
-	data.ajax._loadGroups = function(id, params, call) {
-		console.log(params);
-		var url = baseUrl + "/group/" + id;
-		$.getJSON( url, $.param(params) )
-		.success( function( res ) {
-			var r = new Object();
-			r.type = true;
-
-			for ( var ind = 0 ; ind < res.total ; ind++ ) {
-				var e = res[ind];
-			}
-			r.data = res;
-			r.data.sort(function( a, b ) {
-				return a.id - b.id;
-			});	
-			console.log(r);
-			notUndefined(call, r);
-		})
-		.fail(function() {
-			console.log("Request Failed - loadGroups.");
-		});
-	}
-
-	// combine _loadGroups and loadProcess
-	data.ajax.test_loadGroups = function(id, params, call) {
+	data.ajax.loadGroups = function(id, params, call) {
 		console.log(params);
 		var url = baseUrl + "/group/" + id;
 		$.getJSON( url, $.param(params) )
@@ -518,145 +441,14 @@ function dataSystem ( book ) {
 			console.log("Request Failed - loadGroups.");
 		});
 	}
-	// delete
-	data.ajax.loadProcess = function(record_id, params, call) {
-		var url = baseUrl + "/process/" + record_id;
-		$.getJSON( url, $.param(params) )
-		.success( function( res ) {
-			var r = new Object();
-			r.type = true;
-			var set = new Array();
-			for ( var ind = 0 ; ind < res.length ; ind++ ) {
-				var obj = res[ind];
-				var v = new Array();
-							
-				set.push(
-					new Object({
-						id : obj.pid,
-						db_id : obj.process_id,
-						group : obj.group_id,
-						class: obj.label_id,
-						group_entry : function() {
-							var id = this.group;
-							return ctrl.getGroupById(id);
-						}
-					})
-				);
-			}
-			r.data = set;
-			r.data.sort( function( a, b ){
-				return a.id - b.id;
-			});
-			notUndefined(call, r);
-		})
-		.fail(function() {
-			console.log("Request Failed.");
-		});
-	}
-
-	data.ajax.loadGroups = function(id, n, offset, call){
-		var url = fixUrl + "/getTemplateGroups?template_id=" + id + "&n=" + n;
-		console.log(url);
-		$.ajax({
-			url: url,
-			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-			crossOrigin:true,
-			method:"GET",
-			dataType : "json",
-			statusCode: {			
-				200: function(msg){
-					msg = Array.prototype.slice.call(msg, offset, offset+pageSize);
-					var r = new Object();
-					r.type = true;
-
-					for ( var ind = 0 ; ind < msg.length ; ind++ ) {
-						var e = msg[ind];
-						for ( var n = 0 ; n < e.keyword.length ; n++ ) {
-							var k = e.keyword[n];
-							if ( k.length == 0 ){
-								e.keyword.splice( n, 1 );
-							}
-							e.keyword[n] = k.replace(/ /g, "");
-						}
-					}
-
-					r.data = msg;
-					r.data.sort( function( a, b ){
-						return a.id - b.id;
-					});	
-
-					notUndefined(call, r);
-				},
-				404 : function(){
-					console.log("404 with get template");
-					var r = new Object();
-					r.type = false;
-					r.data = [ 
-					new Object({
-						id : 1,
-						keyword : [ 'test', '測試', '功能', '動物'],
-						sentence : [
-							"測試動物的功能",
-							"test functionbility",
-							"animals function---------------------------------"
-						],
-						total : 3
-					}),new Object({
-						id : 2,
-						keyword : [ 'test02', '測試', '功能', '動物02'],
-						sentence : [
-							"測試動物的功能02",
-							"test functionbility",
-							"animals function02---------------------------------"
-						],
-						total : 4
-					}),  new Object({
-						id : 3,
-						keyword : [ 'test03', '測試', '功能', '動物03'],
-						sentence : [
-							"測試動物的功能03",
-							"test functionbility",
-							"animals function---------------------------------"
-						],
-						total : 3
-					})];	
-					r.data.sort( function( a, b ){
-						return a.id - b.id;
-					});			
-					notUndefined(call, r);
-				}
-			}
-		});	
-	}
 
 	data.ajax.createLabel = function(id, name, call){
-		var url = fixUrl+"/createLabel?record_id="+id+"&class="+name;
+		var url = fixUrl + "/createLabel?record_id=" + id + "&class=" + name;
 		console.log(url)
 		$.ajax({
 			url: url,
 			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-			crossOrigin : true,
-			method:"GET",
-			dataType : "json",
-			statusCode: {			
-				200: function(msg){
-					if ( msg.code == 1 ){
-						console.log(msg);
-						msg.data.name = name;
-					}				
-					notUndefined(call, msg);
-				}
-			}
-		});	
-	}
-
-	data.ajax._createLabel = function(id, name, call){
-		var url = fixUrl+"/createLabel?record_id="+id+"&class="+name;
-		console.log(url)
-		$.ajax({
-			url: url,
-			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-			crossOrigin : true,
+			crosOrigin : true,
 			method:"GET",
 			dataType : "json",
 			statusCode: {			
@@ -665,8 +457,8 @@ function dataSystem ( book ) {
 					if ( msg.code == 1 ) {
 						r.code = 1;
 						r.data = new Object();
-						r.data.label_id = msg.data.id
-						r.data.name = name
+						r.data.label_id = msg.data.id;
+						r.data.name = name;
 						r.data.group_count = 0;
 						r.data.comment_count = 0;
 					}			
@@ -676,26 +468,7 @@ function dataSystem ( book ) {
 			}
 		});	
 	}
-	/*
-	data.ajax.editLabel = function(id, name, call){
-		var url = fixUrl+"/editLabel?id="+id+"&name="+name;
-		console.log(url)
-		$.ajax({
-			url: url,
-			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-			crossOrigin : true,
-			method:"GET",
-			dataType : "json",
-			statusCode: {			
-				200: function(msg){
-					console.log(msg);
-					msg.data.name = name;
-					notUndefined(call, msg);
-				}
-			}
-		});	
-	}
-	*/
+
 	data.ajax.editLabel = function(id, name, call){
 		var url = fixUrl+"/editLabel?id="+id+"&name="+name;
 		console.log(url)
@@ -736,8 +509,8 @@ function dataSystem ( book ) {
 	}
 
 	data.ajax.removeLabel = function(id, call){
-		var url = fixUrl+"/deleteLabel?id=" + id;
-		console.log(url)
+		var url = fixUrl + "/deleteLabel?id=" + id;
+		console.log(url);
 		$.ajax({
 			url: url,
 			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -751,29 +524,7 @@ function dataSystem ( book ) {
 			}
 		});	
 	}
-	/*
-	data.ajax._removeLabel = function(id, call){
-		var url = fixUrl+"/deleteLabel?id=" + id;
-		console.log(url)
-		$.ajax({
-			url: url,
-			headers:{'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-			crossOrigin : true,
-			method:"GET",
-			dataType : "json",
-			statusCode: {			
-				200: function(msg){	
-					var r = new Object();
-					r.code = 1;
-					r.data = new Object();
-					r.data.id = msg.data.id;
-					r.data.name = name;
-					notUndefined(call, r);				
-				}
-			}
-		});	
-	}
-	*/
+
 	this.updateRecord = function( info, call){
 		data.ajax.updateRecord(info, function() {
 			data.controller.group.groupFilter();
@@ -821,38 +572,10 @@ function dataSystem ( book ) {
 
 	this.groupBlock = function(){
 		var set = data.controller.ctrl.getBlockSet();
-		console.log(set)
 		data.controller.group.groupBlock( set );
-		/*var set = data.controller.ctrl.getBlockTerm();
-		if (set.length > 0 ){
-			var text = ""
-			for ( var ind = 0 ; ind < set.length ; ind++ ){
-				var str = set[ind];
-				text += encodeURIComponent(str);
-				if ( ind != (set.length-1)){
-					text +=","
-				}
-			}
-
-			openLoading();
-			data.ajax.getBlockSearchGroup ( ctrl.getTemplate().id, text, function(msg){
-				closeLoading();
-				if ( msg.code == 1 ){
-					//console.log(msg.data)
-					data.controller.group.groupBlock( msg.data.id );
-				}else{
-					ctrl.errorView( lang.getString("search-fail") )
-				}
-			})
-		}else{
-			data.controller.group.removeBlock( );
-		}*/
-		
-		//data.controller.group.groupBlock( set );
 	}
 
 	this.groupBlockClear = function() {
-		//var set = data.controller.ctrl.getBlockSet();
 		data.controller.group.groupBlock( [] );
 	}
 
@@ -866,15 +589,12 @@ function dataSystem ( book ) {
 		data.ajax.getLabel(data.record_id, function( classes ) {
 			data.class = classes.data;
 			data.controller.label.render( data.class );
+			closeLoading();
 		});
-		// original
-		//data.controller.label.render( data.class );
 	}
 
 	this.renderGroups = function() {
 		data.controller.group.render( data.record );
-		//ctrl.groupBlock();
-		//ctrl.groupFilter();
 	}
 
 	this.panelHeight = function(){
@@ -901,7 +621,6 @@ function dataSystem ( book ) {
 		return data;
 	}	
 
-	// get function
 	this.getChildGroup = function( id ){
 		var result = new Array();
 		var id = ctrl.getRecordById(id).db_id;
@@ -1160,13 +879,6 @@ function dataSystem ( book ) {
 			temp.push( data.class[ind]);
 		}
 		console.log(temp);
-		/*
-		data.ajax.loadGroupSize(data.template_id, 'filter', function(res) {
-
-		})
-		data.ajax._loadGroups(id, action, offset, call)
-		//render
-		*/
 
 		data.controller.group.showFilterView( temp );
 	}
@@ -1258,14 +970,15 @@ function dataSystem ( book ) {
 		}
 	}
 
-	this.createLabel = function(){
+	// 由面板右側新增標籤
+	this.createLabel = function() {
 		var target = $("body > .overlay-view.create");
 		var input = target.find(".cont > .cont > .text");
 		var tip = target.find(".cont > .cont > .tip_sys");
 		var text = input.val();
-		tip.html("")
-		for ( var ind = 0 ; ind < data.class.length ; ind++ ){
-			if ( data.class[ind].name == text ){
+		tip.html("");
+		for ( var ind = 0 ; ind < data.class.length ; ind++ ) {
+			if ( data.class[ind].name == text ) {
 				tip.html( lang.getString("name-exist") );
 			}
 		}
@@ -1275,8 +988,7 @@ function dataSystem ( book ) {
 
 		if ( tip.html().length == 0 ){
 			openLoading();
-			data.ajax._createLabel( ctrl.getRecord().id, text, function(msg){
-				console.log(msg);
+			data.ajax.createLabel( ctrl.getRecord().id, text, function(msg){
 				data.controller.ctrl.closeView("create");
 
 				if (msg.code == 1 ){
@@ -1287,9 +999,8 @@ function dataSystem ( book ) {
 					ctrl.renderLabel();
 					ctrl.renderGroups();
 					ctrl.updateClassListView();
-					closeLoading();
 				}else{
-					ctrl.errorView(  lang.getString("create-fail")  );
+					ctrl.errorView( lang.getString("create-fail") );
 					closeLoading();
 				}
 			})
@@ -1313,7 +1024,6 @@ function dataSystem ( book ) {
 		if ( ( text.length > 0) && (text.length <= 10) ) {
 			openLoading();
 			data.ajax.editLabel( id, text, function(msg) {
-				closeLoading();
 				data.controller.ctrl.closeView("edit")
 				if (msg.code == 1 ) {
 					var info = msg.data;
@@ -1324,12 +1034,13 @@ function dataSystem ( book ) {
 					ctrl.updateClassListView();
 				}else{
 					ctrl.errorView(  lang.getString("rename-fail") );
+					closeLoading();
 				}
 			})
 		}
 	}
 
-	this._splitLabel = function(set) {
+	this.splitLabel = function(set) {
 		var id_text = "";
 		for ( var ind = 0 ; ind < set.length ; ind++ ) {
 			id_text += set[ind].db_id;
@@ -1337,7 +1048,7 @@ function dataSystem ( book ) {
 				id_text += ',';
 		}
 
-		openLoading()
+		openLoading();
 		data.ajax.updateRecord ( id_text, 0, function(msg){
 			data.controller.ctrl.closeView("split");
 			if ( msg.code == 1 ){
@@ -1345,43 +1056,12 @@ function dataSystem ( book ) {
 				ctrl.renderLabel();
 			}else{
 				ctrl.errorView(  lang.getString("split-fail") );
+				closeLoading();
 			}
-			closeLoading();
 		})
 	}
-	/*
-	this.splitLabel = function(entry){
-		var id = ctrl.getSelectedLabel()[0];
-		var id_text = "";
-		for ( var ind = 0 ; ind < entry.length ; ind++ ){
-			var e = entry[ind];
-			id_text += e.db_id;
-			if ( ind != (entry.length-1 ) ){
-				id_text +=",";
-			}
-		}
 
-		openLoading()
-		console.log(id_text);
-		data.ajax.updateRecord ( id_text, 0, function(msg){
-			data.controller.ctrl.closeView("split");
-			if ( msg.code == 1 ){
-				id = parseInt(msg.data.class_id)
-				for ( var ind = 0 ; ind < entry.length ; ind++ ){
-					var e = entry[ind];
-					e.class = 0;
-				}
-				ctrl.renderGroups();
-				ctrl.renderLabel();
-
-			}else{
-				ctrl.errorView(  lang.getString("split-fail") )
-			}
-			closeLoading();
-		})
-	}
-	*/
-	this.removeLabel = function(){
+	this.removeLabel = function() {
 		var set = ctrl.getSelectedLabel();
 		var text = ""
 		for ( var ind = 0 ; ind < set.length ; ind++ ) {
@@ -1410,7 +1090,6 @@ function dataSystem ( book ) {
 				var classSet = data.class;
 				for ( var ind = 0 ; ind < classSet.length ; ind++ ){
 					var classEntry = classSet[ind];
-					//if ( classEntry.id == id ){
 					if ( classEntry.label_id == id ) {
 						classSet.splice( ind, 1);
 					}
@@ -1419,7 +1098,6 @@ function dataSystem ( book ) {
 				ctrl.renderGroups();
 				ctrl.renderLabel();
 				ctrl.updateClassListView();
-				closeLoading();
 			}else{
 				ctrl.errorView(  lang.getString("remove-fail")  );
 				closeLoading();
@@ -1441,12 +1119,12 @@ function dataSystem ( book ) {
 		var ids = "";
 		for ( var ind = 0 ; ind < dbSet.length ; ind++ ){
 			var dbid = dbSet[ind];
-			ids+=dbid;
+			ids += dbid;
 			if ( ind != (dbSet.length-1) ){
-				ids+=","
+				ids += ",";
 			}	
 		}
-		openLoading()
+		openLoading();
 		data.ajax.updateRecord ( ids, id, function(msg){
 			data.controller.ctrl.closeView("classed")
 			if ( msg.code == 1 ){
@@ -1469,9 +1147,8 @@ function dataSystem ( book ) {
 
 	this.createLabelByTyping = function(text, rid){
 		openLoading();
-		console.log(text);
 
-		data.ajax._createLabel( ctrl.getRecord().id, text, function(msg){
+		data.ajax.createLabel( ctrl.getRecord().id, text, function(msg){
 			data.controller.ctrl.closeView("create")
 			if (msg.code == 1 ){	
 				var info = msg.data;
@@ -1481,18 +1158,16 @@ function dataSystem ( book ) {
 				ctrl.updateClassListView();
 				var record = ctrl.getRecordById(rid);
 
-				//data.ajax._updateRecord( record.db_id, info.id, function( answer){
 				data.ajax._updateRecord( record.db_id, info.label_id, function( answer ){	
-					closeLoading()
 					if ( answer.code == 1 ){
 						var targetCid = answer.data.class_id;
 						record.class = targetCid;
-						//console.log(record);
 						// record.id 是第幾筆資料
 						data.controller.group.updateCombinedGroup(record.id, targetCid);
 						ctrl.renderLabel();
 					}else{
 						ctrl.errorView( lang.getString("group") + record.id + lang.getString("label-fail")  );
+						closeLoading();
 					}
 				})			
 			}else{
@@ -1529,243 +1204,9 @@ function dataSystem ( book ) {
 			target.removeClass("active");
 		})
 	}
-	/*
-	this.outputRawDate = function(){
-		var id = ctrl.getTemplate().id;
-		data.ajax.getRowData( id, function( msg ) {
-			//console.log(msg)
-			if ( msg.code == 1 ){
-				//var name = "rawdata_"+ctrl.getTemplate().name;
-				var name = "rawdata.csv";
-				var a = $("<a></a>");
-				
-				a.attr("download", "rawdata_" + ctrl.getTemplate().name + ".csv");
 
-				//var link = msg.filelocation+"?download="+name;
-				var link = fixDataServ + msg.filelocation + name;
-				console.log(link);
-				a.attr("href", link );
-				a.css("z-index",9999999999);
-				console.log(a.attr("href"));
-				$("body").append(a);
-				a[0].click();
-				a.remove();
-			}
-		})
-	}
-	*/
-	this.output = function(){
-		var count = 0;
-		var set = new Array();
-		var tag = new Date().getTime();
-		openLoading();
-		for ( var ind = 0 ; ind < data.group.length ; ind++ ) {
-			var curGroup = data.group[ind];
-			if ( curGroup.sentence.length != curGroup.total ) {
-				set.push( curGroup );
-			}
-		}
-		if ( set.length > 0 ) {
-			var max = -1;
-			for ( var ind = 0 ; ind < set.length ; ind++ ) {
-				var curGroup = set[ind];
-				if ( curGroup.total > max ) {
-					max = curGroup.total;
-				}
-				/*data.ajax.getGroupSentence ( curGroup.id, 0, curGroup.total, function(msg){
-					count++;
-					if ( count == set.length ){
-						ctrl.outputLabel(tag);
-						ctrl.outputGroup(tag);
-						closeLoading()
-					}
-				})*/
-			}
-			data.ajax.loadGroups( ctrl.getRecord().id, max, function() {
-				ctrl.outputLabel(tag);
-				ctrl.outputGroup(tag);
-			})
-		}else{
-			closeLoading();
-		}
-	}
-
-	/*
-    this.outputGroupSentace = function(ind, adata) {
-    	var string=""
-        var curLabel = ctrl.dset[ind];
-        var groups = ctrl.getGroupSetByLabelId( curLabel.id );
-
-        for ( var n = 0 ; n < groups.length ; n++ ) {
-            var curLabel = ctrl.dset[ind];
-            var LG = curLabel.name.replace(/\n/g," ")
-            for ( var i = 0; i < adata[n].sentence.length ; i++ ) {
-                var se = adata[n].sentence[i].replace(/\n/g, " ");
-                se = se.replace(/\r/g, " ");
-                LG = LG.replace(/\n/g, " ");
-                string += curLabel.nid + ", \"" + LG + "\",\"" + se + "\"\n"; 
-            }
-        }			
-        return string;
-    }
-
-	this.outputGroup = function(tag){
-		ctrl.dset = new Array();
-		openLoading();
-		ctrl.dset.push( {
-			nid: 0,
-			id: 0,
-			name: lang.getString("output-term00")
-		});
-		for ( var ind = 0 ; ind < data.class.length ; ind++ ) {
-			ctrl.dset.push( data.class[ind] );
-		}
-        
-        $.get(fixUrl + "/getAllGroupSentence?template_id=" + ctrl.getTemplate().id, function(adata) {
-			var string = lang.getString("output-row00");
-            for ( var ind = 1 ; ind < ctrl.dset.length ; ind++ ) {
-                string = string + ctrl.outputGroupSentace(ind, adata);
-            }
-            string = string + ctrl.outputGroupSentace(0, adata);
-            var encodedUri = encodeURI(string);
-            var csvData = new Blob([string], { type: "text/csv;charset=utf-8;" });
-
-            saveAs(csvData, lang.getString("output-name00") + tag + ".csv");
-            closeLoading();
-        });
-	}
-
-	this.outputLabel = function(tag) {
-		var csvContent = "";
-		var string = lang.getString("output-row01");
-		var set = new Array();
-		set.push( {nid:0, id:0, name:lang.getString("output-term00")});
-		for ( var ind = 0 ; ind < data.class.length ; ind++ ){
-			set.push(data.class[ind]);
-		}
-		for ( var ind = 0 ; ind < set.length ; ind++ ){
-			var curLabel = set[ind];
-			var groups = ctrl.getGroupSetByLabelId( curLabel.id );
-			var total = 0;
-			for ( var n = 0 ; n < groups.length ; n++ ){
-				total += groups[n].total;
-			}
-			string += curLabel.nid + ","+curLabel.name+","+total+"\n";
-		}
-		csvContent += string;
-		var encodedUri = encodeURI(csvContent);
-		var csvData = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-		
-	    saveAs(csvData, lang.getString("output-name01")+ tag + ".csv");
-		closeLoading();
-	}
-
-    this.outputSentenceDone = function(Done, context, tag) {
-    	var processed =0;
-        for ( var i = 0; i < Done.length; i++ ) {
-            if ( 2 == Done[i] ) {
-                processed++;
-            }
-        }
-        if ( Done.length == processed ) {
-            $("#loadingText").text("");
-        } else {
-            $("#loadingText").text( processed + " / " + Done.length );
-           	return
-        }
-        var string = lang.getString("output-row02a");
-        for ( var i = 0 ; i < context.length ; i++ ) {
-            string += context[i];
-        }
-       	var encodedUri = encodeURI(string);
-        var csvData = new Blob([string], { type: "text/csv;charset=utf-8;" });
-
-        saveAs(csvData, lang.getString("output-name02a") + tag + ".csv");
-        closeLoading();
-    }
-
-	this.outputSentence = function() {
-        var csvContent = "";
-        var string = lang.getString("output-row02");
-        var set = new Array();
-        var tag = new Date().getTime();
-        ctrl.dset = new Array();
-        ctrl.Done = new Array();
-        ctrl.context = new Array();
-        openLoading();
-        set.push( {
-        	nid: 0, 
-        	id: 0, 
-        	name: lang.getString("output-term02")
-        });
-        for ( var ind = 0 ; ind < data.class.length ; ind++ ) {
-            set.push(data.class[ind]);
-        }
-        for ( var ind = 0 ; ind < data.group.length ; ind++ ) {
-            r = ctrl.getRecordByGroupId(data.group[ind].id);
-            Label=""
-            if (r) {
-                l = ctrl.getLabelNameById( r.class );
-                if (l) {
-                    Label = l;
-                } 
-            }
-          	i = ind + 1;
-            text = data.group[ind].sentence[0].replace(/(\r|\n)/g, " ");
-            string += i + ",\"" + text + "\"," + data.group[ind].total + "," + Label + "\n";
-        }
-
-        ctrl.Done[0] = 1; 
-        $.get(fixUrl + "/getAllGroupSentence?template_id=" + ctrl.getTemplate().id, function( adata ) {
-        	ctrl.context[0] = ""
-            for (var j = 0;j < adata.length;j++) {
-                var LG = ""
-                for (var i = 0;i < adata[j].sentence.length;i++) {
-                    if ("" == LG) {
-                        LG = adata[j].sentence[i].replace(/^ +/, "");
-                    }
-                    var se = adata[j].sentence[i].replace(/\n/g, " ");
-                    se = se.replace(/\r/g, " ");
-                    LG = LG.replace(/\n/g, " ");
-                    ctrl.context[0] += "\"" + LG + "\",\"" + se + "\"\n"; 
-                }
-            }
-            ctrl.Done[0] = 2; 
-            ctrl.outputSentenceDone(ctrl.Done, ctrl.context, tag);
-        })
-        
-        setTimeout(function( tag ) {
-        	var id = ctrl.getTemplate().id;
-            ctrl.Done[ctrl.Done.length] = 1;
-            $.get(fixDataServ + '/data/' + id + '/cluster_result.csv', function( data ) {
-                var ar = data.split("\n");
-                for ( i = ar.length-1 ; i > 0 ; i-- ) {
-                    var co = ar[i].indexOf(",");
-                	var gnum = parseInt(ar[i].substring(0, co));
-                	if ( (-1 == co || 0 == gnum) && 0 != i ) {
-                    	ar[i-1] = ar[i-1] + ar[i].substring(co+1, ar[i].length-1);
-                	}
-                }
-            	ctrl.context[ctrl.Done.length-1] = "";
-            	for (i = 0; i < ar.length; i++) {
-                	var co = ar[i].indexOf(",")
-                	var gnum = parseInt(ar[i].substring(0, co));
-                	if (1 == gnum) {
-                    	ctrl.context[ctrl.Done.length-1] += "\"" + lang.getString("output-term02a") + "\",\"" + ar[i].substring(co+1, ar[i].length-1) + "\"\n";
-                	}
-            	}
-            	ctrl.Done[ctrl.Done.length-1] = 2;
-                ctrl.outputSentenceDone(ctrl.Done,ctrl.context,tag);
-            })
-		},20, tag)
-        csvContent += string;
-        var encodedUri = encodeURI(csvContent);
-        var csvData = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-	    saveAs(csvData, lang.getString("output-name02") + tag + ".csv");
-	}
-	*/
 	// 看起來只有render label的名稱
-	// 現在已經有在_loadGroups回傳的資料裡了，可以直接在group.js裡面render
+	// 可以直接在group.js裡面render?
 	this.updateClassListView = function() {
 		var con = $("#classList");
 		con.empty();

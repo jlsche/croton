@@ -149,7 +149,7 @@ function navController(lan, dataSystem) {
 
 			var params = req.getData();
 
-			ajax.test_loadGroups(template_id, params, function(msg) {
+			ajax.loadGroups(template_id, params, function(msg) {
 				if ( msg.type ) {
 					ds_ctrl.getData().group = msg.data;
 					ds_ctrl.getData().record = msg.set;
