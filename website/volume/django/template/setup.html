@@ -38,7 +38,7 @@ function doPoll(){
     {% csrf_token %}
     *Template Name: <input id="name" name="name" required /><br />
     *rawdata: <input id="uploadbutton" type="file" value="rawdata" name="rawdata" accept="text/csv" required /><br />
-    role: <input id="uploadbutton" type="file" value="role" name="role" accept="text/csv" /><br />
+    *role: <input id="uploadbutton" type="file" value="role" name="role" accept="text/csv" required/><br />
     pov: <input id="uploadbutton" type="file" value="pov" name="pov" accept="text/csv" /><br />
     <input type="submit" value="上传档案" />
 

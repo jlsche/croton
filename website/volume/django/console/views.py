@@ -137,19 +137,22 @@ def upload(request):
 
     if request.method == 'POST':
         rawdata = request.FILES['rawdata']
-        role = request.FILES.get('role', None)
+        role = request.FILES.get('role')
         pov = request.FILES.get('pov', None)
         name = request.POST.get('name')
 
         if rawdata is None:
-            return HttpResponse('upload fail!')
+            messages.info(request, '請上傳rawdata檔案')
+            return HttpResponseRedirect('/setup/')
+        if role is None:
+            messages.info(request, '請上傳role檔案')
+            return HttpResponseRedirect('/setup/')
         dest_path = str(PROJECT_DIR) + static('data/' + str(index) + '/')
         if not os.path.exists(dest_path):
             os.makedirs(dest_path)
 
         raw_utf_flag = handle_uploaded_file(rawdata, get_dest_path('rawdata.csv', index))
-        if role is not None:
-            role_utf_flag = handle_uploaded_file(role, get_dest_path('role.csv', index))
+        role_utf_flag = handle_uploaded_file(role, get_dest_path('role.csv', index))
         if pov is not None:
             pov_utf_flag = handle_uploaded_file(pov, get_dest_path('pov.csv', index))
 
