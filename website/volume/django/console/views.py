@@ -20,8 +20,8 @@ from django.templatetags.static import static
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 BASE = os.path.dirname(os.path.abspath(__file__))
 
-base_url = 'http://118.178.253.10:3006'
-watcher_url = 'http://118.178.253.10:8011'
+base_url = 'http://116.62.247.165:3006'
+watcher_url = 'http://116.62.247.165:8011'
 
 #base_url = 'http://192.168.10.16:3006'
 #watcher_url = 'http://192.168.10.16:8011'
@@ -209,13 +209,13 @@ def setup(request):
         item = {}
         item["index"] = row[0]
         item["name"] = row[1]
-        #item["time"] = row[4]
+        item["time"] = row[4]
         item["row"] = row[5]
         item["p_order"] = 0 # queue order in of the item if it's processing
         item["status"] = row[6]
     
-        date_object = pytz.timezone('Asia/Shanghai').localize(row[4])
-        #date_object = date_object + timedelta(hours=8)
+        date_object = pytz.timezone('Asia/Shanghai').localize(item["time"])
+        date_object = date_object + timedelta(hours=8)
         #item["time"] = date_object.strftime('%Y{y}%m{m}%d{d} %H:%M:%S').format(y=u'年'.encode('utf8'), m=u'月'.encode('utf8'), d=u'日'.encode('utf8'))
         item["time"] = date_object.strftime('%Y{y}%m{m}%d{d} %H:%M:%S').format(y='/', m='/', d='/')
 
