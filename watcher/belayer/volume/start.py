@@ -6,8 +6,8 @@ import requests
 from pymongo import MongoClient
 
 
-interrupt_url = 'http://192.168.10.16:8011/tasks'
-#interrupt_url = 'http://172.16.123.255:8011/tasks'
+#interrupt_url = 'http://192.168.10.16:8011/tasks'
+interrupt_url = 'http://172.16.123.213:8011/tasks'
 mongo_client = MongoClient('mongo')
 db = mongo_client['log']
 
@@ -57,7 +57,7 @@ def monitor_clustering():
         for _id in diff:
             del task_status[_id]
             print('task {} finished clustering'.format(_id))
-        time.sleep(900)
+        time.sleep(1800)
 
 
 
