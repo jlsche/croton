@@ -20,8 +20,8 @@ from django.templatetags.static import static
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 BASE = os.path.dirname(os.path.abspath(__file__))
 
-base_url = 'http://116.62.247.165:3006'
-watcher_url = 'http://116.62.247.165:8011'
+base_url = 'http://172.16.124.42:3006'
+watcher_url = 'http://172.16.124.42:8011'
 
 #base_url = 'http://192.168.10.16:3006'
 #watcher_url = 'http://192.168.10.16:8011'

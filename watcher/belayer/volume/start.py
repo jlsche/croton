@@ -7,7 +7,7 @@ from pymongo import MongoClient
 
 
 #interrupt_url = 'http://192.168.10.16:8011/tasks'
-interrupt_url = 'http://172.16.123.213:8011/tasks'
+interrupt_url = 'http://172.16.124.42:8011/tasks'
 mongo_client = MongoClient('mongo')
 db = mongo_client['log']
 
