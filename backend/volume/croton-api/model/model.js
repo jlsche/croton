@@ -21,7 +21,7 @@ module.exports.operate = function(payload, callback) {
     }
 
     if (offset != null) {
-        limit = 25;
+        limit = 100;
         offset = parseInt(offset);
     }
    

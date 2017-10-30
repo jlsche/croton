@@ -25,7 +25,7 @@ module.exports.getGroup = function(payload, callback) {
         query = "SELECT id as group_id, sentence, total "+ 
                 "FROM CrotonGroup "+
                 "WHERE template_id=? "+
-                "LIMIT 25 "+ 
+                "LIMIT 100 "+ 
                 "OFFSET "+parseInt(offset);
     }
 
@@ -63,7 +63,7 @@ module.exports.filterGroup = function(payload, callback) {
         query+="AND w.class_id in ("+labels+") "
     }
 
-    query += "LIMIT 25 "+
+    query += "LIMIT 100 "+
              "OFFSET "+parseInt(offset);
 
     console.log(query);

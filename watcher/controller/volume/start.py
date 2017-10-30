@@ -10,7 +10,7 @@ application = Flask(__name__)
 redis_server = redis.Redis(host='redis', db=0, charset="utf-8", decode_responses=True)
 
 def connect_mysql():
-    db =  pymysql.connect(host='mysql', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
+    db = pymysql.connect(host='mysql', user='lingtelli', passwd='lingtelli', db='croton', charset='utf8')
     db_cursor = db.cursor()
     db_cursor.execute('SET NAMES utf8;')
     db_cursor.execute('SET CHARACTER SET utf8;')
@@ -169,15 +169,16 @@ def check_out(task_id):
 
     if action == 'check':
         update_sql_status(task_id, 'stage2')
-        redis_server.hset(hash_key, 'end', end_time)
+        redis_server.hset(hash_key, 'end1', end_time)
     elif action == 'checkout':
         update_sql_status(task_id, 'analyze')
-        redis_server.delete(hash_key)
+        redis_server.hset(hash_key, 'end2', end_time)
+        #redis_server.delete(hash_key)
  
         aliyun_scale_down(instance_id)
         task_queue = get_task_queue()
         if len(task_queue) > 0:
-            time.sleep(60)
+            time.sleep(120)
             start(task_queue[0])
     return jsonify({'status': 'OK'})
 
@@ -208,18 +209,18 @@ def list_tasks():
 def get_task_detail(task_id):
     hash_key = "task.{}".format(task_id)
     try:
-        data = redis_server.hgetall(hash_key)
+        instance = redis_server.hget(hash_key, 'instance')
+        cthr = redis_server.get(hash_key, 'cthr')
+        gthr = redis_server.get(hash_key, 'gthr')
+        start = redis_server.get(hash_key, 'start')
+        end1 = redis_server.get(hash_key, 'end1')
+        end2 = redis_server.get(hash_key, 'end2')
+        data = {'cthr': cthr, 'gthr': gthr, 'start': start, 'end1': end1, 'end2': end2, 'instance': instance}
         msg = {'status': 'OK', 'data': data}
     except:
         msg = {'status': 'Error', 'message': 'No such task in queue.'}
     finally:
         return jsonify(msg)
-
-
-@application.route('/status/<string:task_id>', methods=['GET'])
-def get_task_status(task_id):
-    obj_name = 'status:{}'.format(task_id)
-    return redis_server.get(obj_name)
 
 
 def aliyun_scale_up():
