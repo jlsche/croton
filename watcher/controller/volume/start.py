@@ -200,8 +200,9 @@ def interrupt_task(task_id):
 @application.route('/tasks', methods=['GET'])
 def list_tasks():
     task_dict = {}
-    for hash_key in redis_server.keys():
-        task_dict[hash_key] = redis_server.hgetall(hash_key)
+    keys = [k for k in redis_server.keys() if k != 'crackit']
+    for k in keys:
+        task_dict[k] = redis_server.hgetall(k)
     return jsonify({'data': task_dict})
 
 
