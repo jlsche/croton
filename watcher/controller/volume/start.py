@@ -23,7 +23,9 @@ def update_sql_status(task_id, status):
     conn.cursor().execute(update_string)
     conn.commit()
 
-def get_task_queue():
+def get_queuing_tasks():
+    ''' Get tasks that are in `queuing` status from sql db.
+    '''
     conn = connect_mysql()
     cur = conn.cursor()
     query_string = 'SELECT id from CrotonTemplate WHERE status = "queuing" ORDER BY create_time;'
@@ -31,8 +33,8 @@ def get_task_queue():
     queue = [x[0] for x in cur]
     return queue
 
-def pop_task():
-    ''' Return the first task with status "building".
+def pop_building_task():
+    ''' Return the first task that is in "building" status.
     '''
     conn = connect_mysql()
     cur = conn.cursor()
@@ -58,6 +60,11 @@ def serving_status():
     return num_row_processing, num_scaled_instance
 
 def check_affordable(task_id, num_row_processing, num_scaled_instance):
+    ''' Check if the task should be excuted based on 2 conditions:
+        1.  Number of currently scaled instances should be less than 6.
+        2.  Number of currently processing row count plus row count of new task should be 
+            less than 6 millions.
+    '''
     conn = connect_mysql()
     cur = conn.cursor()
     query_string = 'SELECT raw_count from CrotonTemplate WHERE id = {};'.format(task_id)
@@ -67,9 +74,9 @@ def check_affordable(task_id, num_row_processing, num_scaled_instance):
     if num_row_processing is None:
         num_row_processing = 0
     if (num_row_processing + task_row_count > 6000000):
-        return 'Maximum row count exceeded. Currently {}.'.format(num_row_processing)
+        return 'Maximum row count exceeded.'
     if (num_scaled_instance >= 6):
-        return 'Maximum instance count exceeded. Currently {}.'.format(num_scaled_instance)
+        return 'Maximum instance count exceeded.'
     else:
         return 'available'
 
@@ -99,8 +106,11 @@ def start(task_id):
     data = {}
     if affordable_msg == 'available':
         resp = aliyun_scale_up()
-        update_sql_status(task_id, 'building')
-        data = {'status': 'OK'}
+        if resp['status'] == 'Failed':
+            data = {'status': 'Queuing', 'message': 'Failed scaling up.'}
+        else:
+            update_sql_status(task_id, 'building')
+            data = {'status': 'OK'}
     else:
         data = {'status': 'Queuing', 'message': affordable_msg}
     return jsonify(data)
@@ -108,12 +118,8 @@ def start(task_id):
 
 @application.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    """ Receive task from websit and delete task from redis queue.
-
-        Argus:
-            task_id: Id of the task, int.
-        Returns:
-            resp: Add success, bool.
+    """ Delete task from redis and scaled down the instance.
+        Note: The request will come from the '刪除' button from /setup.
     """
     hash_key = "task.{}".format(task_id)
     instance_id = redis_server.hget(hash_key, 'instance')
@@ -129,11 +135,12 @@ def delete_task(task_id):
         'message': 'task {} deleted.'
     })
 
+
 @application.route('/jobs/<string:instance_id>', methods=['POST'])
-def check_in(instance_id):
+def checkin(instance_id):
     """ The scaled instance will call this api to adopt a task.
     """
-    task_id = pop_task()
+    task_id = pop_building_task()
     if task_id is None:
         aliyun_scale_down(instance_id)
         return jsonify({'status': 'Error', 'message': 'No task in queue'})
@@ -176,20 +183,54 @@ def check_out(task_id):
         #redis_server.delete(hash_key)
  
         aliyun_scale_down(instance_id)
-        task_queue = get_task_queue()
-        if len(task_queue) > 0:
+        queuing_tasks = get_queuing_tasks()
+        if len(queuing_tasks) > 0:
             time.sleep(120)
-            start(task_queue[0])
+            start(queuing_tasks[0])
+    return jsonify({'status': 'OK'})
+
+
+@application.route('/jobs/update/<string:instance_id>', methods=['PUT'])
+def checkout(task_id):
+    """ The scaled instance will call this api to update clustering status.
+        Note: new version of check_out
+    """
+    task_id = request.args.get('task_id')
+    action = request.args.get('action')
+    end_time = request.args.get('end')
+
+    hash_key = "task.{}".format(task_id)
+
+    if action == 'check':
+        update_sql_status(task_id, 'stage2')
+        redis_server.hset(hash_key, 'end1', end_time)
+    elif action == 'checkout':
+        update_sql_status(task_id, 'analyze')
+        redis_server.hset(hash_key, 'end2', end_time)
+ 
+        aliyun_scale_down(instance_id)
+        queuing_tasks = get_queuing_tasks()
+        if len(queuing_tasks) > 0:
+            time.sleep(120)
+            start(queuing_tasks[0])
     return jsonify({'status': 'OK'})
 
 
 @application.route('/tasks/<string:task_id>', methods=['PUT'])
 def interrupt_task(task_id):
+    ''' Set status to `Error` and scaled down the instance.
+        Note: The request will come from belayer.
+    '''
     hash_key = "task.{}".format(task_id)
     instance_id = redis_server.hget(hash_key, 'instance')
 
     update_sql_status(task_id, 'Error')
     aliyun_scale_down(instance_id)
+
+    queuing_tasks = get_queuing_tasks()
+    if len(queuing_tasks) > 0:
+        time.sleep(120)
+        start(queuing_tasks[0])
 
     return jsonify({
         'status': 'OK',
@@ -225,14 +266,36 @@ def get_task_detail(task_id):
 
 
 def aliyun_scale_up():
-    aliyun_action = Aliyun('ExecuteScalingRule')
-    resp = aliyun_action.request()
-    return resp
+    counter = 0
+    resp_obj = {'status': 'Failed'}
+    while True:
+        if counter > 10:
+            break
+        aliyun_action = Aliyun('ExecuteScalingRule')
+        action_resp = aliyun_action.request()
+        if 'Code' in action_resp:
+            time.sleep(60)
+            counter += 1
+        else:
+            resp_obj['status'] = 'Successed'
+            break
+    return resp_obj
 
 def aliyun_scale_down(instance_id):
-    aliyun_action = Aliyun('RemoveInstances', instance_id)
-    aliyun_action.request()
-
+    counter = 0
+    resp_obj = {'status': 'Failed'}
+    while True:
+        if counter > 10:
+            break
+        aliyun_action = Aliyun('RemoveInstances', instance_id)
+        action_resp = aliyun_action.request()
+        if 'Code' in action_resp:
+            time.sleep(60)
+            counter += 1
+        else:
+            resp_obj['status'] = 'Successed'
+            break
+    return resp_obj
 
 
 if __name__ == '__main__':
