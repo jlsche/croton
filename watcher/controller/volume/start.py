@@ -164,36 +164,9 @@ def checkin(instance_id):
     })
 
 
-@application.route('/jobs/<string:task_id>', methods=['PUT'])
-def check_out(task_id):
+@application.route('/jobs/<string:instance_id>', methods=['PUT'])
+def checkout(instance_id):
     """ The scaled instance will call this api to update clustering status.
-    """
-    action = request.args.get('action')
-    end_time = request.args.get('end')
-
-    hash_key = "task.{}".format(task_id)
-    instance_id = redis_server.hget(hash_key, 'instance')
-
-    if action == 'check':
-        update_sql_status(task_id, 'stage2')
-        redis_server.hset(hash_key, 'end1', end_time)
-    elif action == 'checkout':
-        update_sql_status(task_id, 'analyze')
-        redis_server.hset(hash_key, 'end2', end_time)
-        #redis_server.delete(hash_key)
- 
-        aliyun_scale_down(instance_id)
-        queuing_tasks = get_queuing_tasks()
-        if len(queuing_tasks) > 0:
-            time.sleep(120)
-            start(queuing_tasks[0])
-    return jsonify({'status': 'OK'})
-
-
-@application.route('/jobs/update/<string:instance_id>', methods=['PUT'])
-def checkout(task_id):
-    """ The scaled instance will call this api to update clustering status.
-        Note: new version of check_out
     """
     task_id = request.args.get('task_id')
     action = request.args.get('action')
