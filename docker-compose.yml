@@ -120,7 +120,7 @@ services:
     redis:
         build: ./watcher/redis
         container_name: redis
-        command: redis-server
+        command: redis-server --appendonly yes
         volumes:
             - ./watcher/redis/data:/data
         ports:
@@ -128,6 +128,13 @@ services:
         restart: always
         networks:
             - watcher_redis_net
+        logging:
+            driver: "syslog"
+            options:
+                syslog-address: udp://127.0.0.1:5514
+                syslog-facility: daemon
+                tag: redis
+
 
     watcher:
         depends_on:
