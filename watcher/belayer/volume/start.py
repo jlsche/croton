@@ -20,7 +20,7 @@ def connect_mysql():
     db_cursor.execute('SET character_set_connection=utf8;')
     return db
 
-def get_working_tasks():
+def get_stage1_tasks():
     conn = connect_mysql()
     cur = conn.cursor()
     query_string = 'SELECT id, status FROM CrotonTemplate where status in ("stage1")'
@@ -31,33 +31,41 @@ def get_working_tasks():
     return tasks
 
 
-def monitor_clustering():
-    task_status = {}
+def monitor_clustering(interval=1800):
+    ''' Check if stage1 clustering is working by examing the log count.
+        If the log count doesn't increment in a time interval,
+        the function will call the interrupt api to stop the instance.
+    '''
+    task_log_count_dict = {}
     while True:
-        working_tasks = get_working_tasks()
-        _tasks = []
-        for task in working_tasks:
+        stage1_tasks = get_stage1_tasks()
+        current_monitoring_tasks = []
+        for task in stage1_tasks:
             task_id = task[0]
             status = task[1]
-            _tasks.append(task_id)
+            current_monitoring_tasks.append(task_id)
             col_name = 'log_{}'.format(task_id)
             col = db[col_name]
-            count = col.count()
-            if task_id not in task_status:
-                task_status[task_id] = count
+            log_count = col.count()
+
+            # task just started clustering
+            if task_id not in task_log_count_dict:
+                task_log_count_dict[task_id] = log_count
                 continue
-            print('id:', task_id, '\tstatus:', status, '\tcount:', count)
-            if count > task_status[task_id]:
-                task_status[task_id] = count
+
+            # task being monitoring
+            if log_count > task_log_count_dict[task_id]:
+                task_log_count_dict[task_id] = log_count
             else:
                 res = requests.put('{}/{}'.format(interrupt_url, task_id))
-                print('task {} should be interruptd.'.format(task_id))
+                print('task {} should be interrupted.'.format(task_id))
 
-        diff = list(set(task_status.keys()) - set(_tasks))
+        # Remove tasks finished clustering stage1
+        diff = list(set(task_log_count_dict.keys()) - set(current_monitoring_tasks))
         for _id in diff:
-            del task_status[_id]
+            del task_log_count_dict[_id]
             print('task {} finished clustering'.format(_id))
-        time.sleep(1800)
+        time.sleep(interval)
 
 
 
