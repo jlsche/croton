@@ -63,8 +63,12 @@ function dataSystem ( book ) {
 				var id = ind + 1;
 				var name = obj.name;
 				var members = new Array();
-				if (obj.processes.length > 0)
-					members = obj.processes[0].group.sentence;
+				for(var jnd = 0; jnd < obj.processes.length; jnd++) {
+					if (jnd == 0)
+						members = obj.processes[jnd].group.sentence;
+					else
+						members = members.concat(obj.processes[jnd].group.sentence);
+				}
 				set.push(
 					new Object({
 						id : id,
